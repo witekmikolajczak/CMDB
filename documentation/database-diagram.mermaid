@@ -1,0 +1,329 @@
+erDiagram
+    USERS {
+        uuid id PK
+        varchar username
+        varchar password_hash
+        varchar email
+        varchar first_name
+        varchar last_name
+        varchar employee_id
+        varchar phone
+        enum role
+        enum status
+        int department_id FK
+        uuid manager_id FK
+        int location_id FK
+        varchar position_title
+        timestamp created_at
+        timestamp updated_at
+    }
+    
+    DEPARTMENTS {
+        int id PK
+        varchar name
+        text description
+        int parent_id FK
+        timestamp created_at
+        timestamp updated_at
+    }
+    
+    LOCATIONS {
+        int id PK
+        varchar name
+        text address
+        varchar city
+        varchar state
+        varchar postal_code
+        varchar country
+        timestamp created_at
+        timestamp updated_at
+    }
+    
+    ASSET_CATEGORIES {
+        int id PK
+        varchar name
+        text description
+        int parent_id FK
+        timestamp created_at
+        timestamp updated_at
+    }
+    
+    ASSET_TYPES {
+        int id PK
+        varchar name
+        text description
+        int category_id FK
+        boolean has_serial_number
+        boolean has_mac_address
+        boolean has_imei
+        timestamp created_at
+        timestamp updated_at
+    }
+    
+    VENDORS {
+        int id PK
+        varchar name
+        varchar contact_person
+        varchar email
+        varchar phone
+        varchar website
+        text address
+        timestamp created_at
+        timestamp updated_at
+    }
+    
+    ASSETS {
+        uuid id PK
+        varchar asset_tag
+        varchar name
+        text description
+        int asset_type_id FK
+        varchar serial_number
+        varchar mac_address
+        varchar imei
+        enum status
+        date acquisition_date
+        decimal acquisition_cost
+        int vendor_id FK
+        date warranty_start_date
+        date warranty_end_date
+        int expected_lifetime_months
+        varchar make
+        varchar model
+        text specifications
+        int department_id FK
+        int location_id FK
+        uuid created_by FK
+        timestamp created_at
+        timestamp updated_at
+    }
+    
+    ASSET_MAINTENANCE {
+        int id PK
+        uuid asset_id FK
+        date maintenance_date
+        varchar maintenance_type
+        text description
+        varchar performed_by
+        decimal cost
+        varchar status
+        uuid created_by FK
+        timestamp created_at
+        timestamp updated_at
+    }
+    
+    ASSET_ASSIGNMENTS {
+        uuid id PK
+        uuid asset_id FK
+        uuid assigned_to FK
+        uuid assigned_by FK
+        timestamp assignment_date
+        timestamp expected_return_date
+        timestamp actual_return_date
+        enum status
+        text purpose
+        text notes
+        text condition_on_assignment
+        text condition_on_return
+        timestamp created_at
+        timestamp updated_at
+    }
+    
+    ASSIGNMENT_HISTORY {
+        uuid id PK
+        uuid asset_id FK
+        uuid assigned_to FK
+        uuid assigned_by FK
+        timestamp assignment_date
+        timestamp return_date
+        enum status
+        text purpose
+        text notes
+        text condition_on_assignment
+        text condition_on_return
+        timestamp created_at
+    }
+    
+    PROTOCOLS {
+        uuid id PK
+        varchar reference_number
+        enum protocol_type
+        varchar title
+        uuid assignment_id FK
+        uuid user_id FK
+        uuid admin_id FK
+        uuid asset_id FK
+        timestamp generated_date
+        varchar document_path
+        timestamp signed_date
+        bytea signature_user
+        bytea signature_admin
+        text terms_and_conditions
+        timestamp created_at
+        timestamp updated_at
+    }
+    
+    NOTIFICATIONS {
+        int id PK
+        uuid user_id FK
+        enum notification_type
+        varchar title
+        text message
+        uuid related_asset_id FK
+        uuid related_assignment_id FK
+        boolean is_read
+        timestamp created_at
+    }
+    
+    CUSTOM_FIELD_DEFINITIONS {
+        int id PK
+        varchar name
+        text description
+        varchar field_type
+        varchar entity_type
+        boolean is_required
+        text options
+        timestamp created_at
+        timestamp updated_at
+    }
+    
+    ASSET_CUSTOM_FIELDS {
+        int id PK
+        uuid asset_id FK
+        int field_id FK
+        text value
+        timestamp created_at
+        timestamp updated_at
+    }
+    
+    USER_CUSTOM_FIELDS {
+        int id PK
+        uuid user_id FK
+        int field_id FK
+        text value
+        timestamp created_at
+        timestamp updated_at
+    }
+    
+    REPORTS {
+        int id PK
+        varchar name
+        text description
+        varchar report_type
+        jsonb parameters
+        uuid created_by FK
+        timestamp last_generated
+        varchar schedule_type
+        jsonb schedule_details
+        jsonb recipients
+        timestamp created_at
+        timestamp updated_at
+    }
+    
+    REPORT_RESULTS {
+        int id PK
+        int report_id FK
+        timestamp generated_at
+        uuid generated_by FK
+        varchar file_path
+        varchar file_type
+        int file_size
+        boolean is_scheduled
+        varchar status
+        jsonb parameters_used
+        timestamp created_at
+    }
+    
+    AUDIT_LOG {
+        int id PK
+        uuid user_id FK
+        varchar action
+        varchar entity_type
+        varchar entity_id
+        jsonb old_values
+        jsonb new_values
+        varchar ip_address
+        text user_agent
+        timestamp created_at
+    }
+    
+    SYSTEM_SETTINGS {
+        int id PK
+        varchar setting_key
+        text setting_value
+        varchar setting_group
+        text description
+        boolean is_editable
+        varchar data_type
+        timestamp created_at
+        timestamp updated_at
+    }
+    
+    EMAIL_TEMPLATES {
+        int id PK
+        varchar name
+        text description
+        varchar subject
+        text body
+        varchar template_type
+        jsonb variables
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    USERS ||--o{ ASSET_ASSIGNMENTS : "is assigned to"
+    USERS ||--o{ USERS : "manages"
+    USERS }o--|| DEPARTMENTS : "belongs to"
+    USERS }o--|| LOCATIONS : "is located at"
+    USERS ||--o{ PROTOCOLS : "is associated with"
+    USERS ||--o{ NOTIFICATIONS : "receives"
+    USERS ||--o{ USER_CUSTOM_FIELDS : "has"
+    USERS ||--o{ AUDIT_LOG : "performs"
+    USERS ||--o{ REPORTS : "creates"
+    USERS ||--o{ REPORT_RESULTS : "generates"
+    USERS ||--o{ ASSETS : "creates"
+    
+    DEPARTMENTS ||--o{ USERS : "contains"
+    DEPARTMENTS ||--o{ ASSETS : "owns"
+    DEPARTMENTS }o--|| DEPARTMENTS : "parent of"
+    
+    LOCATIONS ||--o{ USERS : "contains"
+    LOCATIONS ||--o{ ASSETS : "contains"
+    
+    ASSET_CATEGORIES ||--o{ ASSET_TYPES : "contains"
+    ASSET_CATEGORIES }o--|| ASSET_CATEGORIES : "parent of"
+    
+    ASSET_TYPES ||--o{ ASSETS : "classifies"
+    
+    VENDORS ||--o{ ASSETS : "supplies"
+    
+    ASSETS ||--o{ ASSET_ASSIGNMENTS : "is assigned in"
+    ASSETS ||--o{ ASSIGNMENT_HISTORY : "was assigned in"
+    ASSETS ||--o{ ASSET_MAINTENANCE : "undergoes"
+    ASSETS ||--o{ PROTOCOLS : "is referenced in"
+    ASSETS ||--o{ NOTIFICATIONS : "is referenced in"
+    ASSETS ||--o{ ASSET_CUSTOM_FIELDS : "has"
+    ASSETS }o--|| ASSET_TYPES : "is type of"
+    ASSETS }o--|| DEPARTMENTS : "belongs to"
+    ASSETS }o--|| LOCATIONS : "is located at"
+    ASSETS }o--|| VENDORS : "supplied by"
+    
+    ASSET_ASSIGNMENTS ||--o{ PROTOCOLS : "generates"
+    ASSET_ASSIGNMENTS ||--o{ NOTIFICATIONS : "triggers"
+    ASSET_ASSIGNMENTS }o--|| USERS : "assigned by"
+    
+    ASSET_MAINTENANCE }o--|| ASSETS : "maintains"
+    
+    ASSIGNMENT_HISTORY }o--|| ASSETS : "records"
+    ASSIGNMENT_HISTORY }o--|| USERS : "assigned to"
+    
+    CUSTOM_FIELD_DEFINITIONS ||--o{ ASSET_CUSTOM_FIELDS : "defines"
+    CUSTOM_FIELD_DEFINITIONS ||--o{ USER_CUSTOM_FIELDS : "defines"
+    
+    ASSET_CUSTOM_FIELDS }o--|| ASSETS : "extends"
+    USER_CUSTOM_FIELDS }o--|| USERS : "extends"
+    
+    REPORTS ||--o{ REPORT_RESULTS : "produces"
+    
+    PROTOCOLS }o--|| ASSET_ASSIGNMENTS : "documents"

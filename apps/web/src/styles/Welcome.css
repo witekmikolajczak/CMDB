@@ -1,0 +1,245 @@
+/* Welcome Page Styles based on the CMDB Application Styling Guide */
+
+:root {
+    /* Primary Colors */
+    --primary: #8A4FFF;
+    --primary-hover: #9D6FFF;
+    --primary-foreground: #FFFFFF;
+    
+    /* Secondary Colors */
+    --secondary: #4ECDC4;
+    --secondary-hover: #6ED9D2;
+    --secondary-foreground: #FFFFFF;
+    
+    /* Accent Colors */
+    --accent: #FFD166;
+    --accent-hover: #FFDA85;
+    --accent-foreground: #1A1A2E;
+    
+    /* Neutral Colors (Light Mode) */
+    --background: #FFFFFF;
+    --foreground: #1A1A2E;
+    --card: #F9F9F9;
+    --border: #E2E8F0;
+    --muted: #F1F5F9;
+    --muted-foreground: #64748B;
+    
+    /* Status Colors */
+    --success: #06D6A0;
+    --warning: #FFD166;
+    --destructive: #EF476F;
+    --destructive-foreground: #FFFFFF;
+    
+    /* Typography */
+    --font-family: 'Barlow', sans-serif;
+  }
+  
+  /* Base styles */
+  body {
+    font-family: var(--font-family);
+    color: var(--foreground);
+    background-color: var(--background);
+    margin: 0;
+    padding: 0;
+    line-height: 1.5;
+    width: 100vw;
+  }
+  
+  .welcome-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-width: 100vw;
+  }
+  
+  /* Header styles */
+  .welcome-header {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+    padding: 1.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 100vw;
+  }
+  
+  .logo-container {
+    text-align: center;
+  }
+  
+  .app-title {
+    font-size: 2.25rem;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: 0.05em;
+  }
+  
+  .app-subtitle {
+    font-size: 1.125rem;
+    font-weight: 400;
+    margin: 0.5rem 0 0;
+    opacity: 0.9;
+  }
+  
+  /* Main content styles */
+  .welcome-content {
+    flex: 1;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Hero section */
+  .hero-section {
+    text-align: center;
+    margin-bottom: 4rem;
+    padding: 3rem 2rem;
+    background-color: var(--card);
+    border-radius: 0.75rem;
+    border: 1px solid var(--border);
+    max-width: 800px;
+    width: 100%;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  .hero-section h2 {
+    font-size: 2.25rem;
+    margin-bottom: 1.5rem;
+    color: var(--primary);
+  }
+  
+  .hero-section p {
+    font-size: 1.25rem;
+    margin-bottom: 2.5rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .cta-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+  }
+  
+  .primary-btn {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+    border: none;
+    border-radius: 0.5rem;
+    padding: 1rem 2rem;
+    font-size: 1.125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 150ms ease;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  .primary-btn:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+  
+  .secondary-btn {
+    background-color: transparent;
+    color: var(--primary);
+    border: 1px solid var(--primary);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 150ms ease;
+  }
+  
+  .secondary-btn:hover {
+    background-color: var(--muted);
+  }
+  
+  /* Features section */
+  .features-section {
+    margin-bottom: 4rem;
+    text-align: center;
+    max-width: 800px;
+  }
+  
+  .features-section h2 {
+    text-align: center;
+    font-size: 1.75rem;
+    margin-bottom: 1.5rem;
+    color: var(--foreground);
+  }
+  
+  .features-description {
+    margin-bottom: 2rem;
+    color: var(--muted-foreground);
+    font-size: 1.1rem;
+    line-height: 1.6;
+  }
+  
+  .simplified-features {
+    display: flex;
+    justify-content: center;
+    gap: 2.5rem;
+    flex-wrap: wrap;
+  }
+  
+  .simplified-feature {
+    text-align: center;
+    width: 200px;
+  }
+  
+  .feature-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    display: inline-block;
+  }
+  
+  .simplified-feature p {
+    color: var(--foreground);
+    margin: 0;
+    font-weight: 500;
+  }
+  
+  /* Remove roles section */
+  
+  /* Footer styles */
+  .welcome-footer {
+    background-color: var(--card);
+    padding: 1.5rem;
+    text-align: center;
+    border-top: 1px solid var(--border);
+  }
+  
+  .welcome-footer p {
+    margin: 0;
+    color: var(--muted-foreground);
+    font-size: 0.875rem;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .cta-buttons {
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    
+    .features-grid, .roles-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .hero-section h2 {
+      font-size: 1.75rem;
+    }
+    
+    .hero-section p {
+      font-size: 1rem;
+    }
+  }
