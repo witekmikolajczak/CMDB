@@ -1,6 +1,7 @@
 // apps/web/src/pages/UsersPage.tsx
 import React, { useState, useEffect, useRef } from 'react';
 import '../styles/UsersPage.css';
+import ProfilePictureUploader from '../components/ProfilePictureUploader';
 import { useAuth } from '../contexts/AuthContext';
 
 // Define interfaces
@@ -76,12 +77,7 @@ const UsersPage: React.FC = () => {
   const [modalMessage, setModalMessage] = useState<{title: string, text: string, type: string} | null>(null);
   const [showConfirmDelete, setShowConfirmDelete] = useState<boolean>(false);
 
-  // State for profile picture upload
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [uploadProgress, setUploadProgress] = useState<boolean>(false);
-
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Fetch users from the API
   useEffect(() => {
@@ -442,55 +438,15 @@ const UsersPage: React.FC = () => {
     }
   };
 
-  // Handle profile picture change
-  const handleProfilePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    
-    // Check file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setModalMessage({
-        title: 'Error',
-        text: 'Profile picture must be less than 5MB',
-        type: 'error'
-      });
-      return;
-    }
-    
-    // Check file type
-    if (!['image/jpeg', 'image/png', 'image/gif'].includes(file.type)) {
-      setModalMessage({
-        title: 'Error',
-        text: 'Only JPEG, PNG, and GIF images are allowed',
-        type: 'error'
-      });
-      return;
-    }
-    
-    setSelectedFile(file);
-    
-    // Create preview URL
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPreviewUrl(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-  };
-
   // Handle profile picture upload
   const handleProfilePictureUpload = async (userId: string, file: File) => {
     try {
-      setUploadProgress(true);
-      
-      const formData = new FormData();
-      formData.append('profilePicture', file);
-      
       const response = await fetch(`http://localhost:3001/users/${userId}/profile-picture`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
         },
-        body: formData
+        body: file
       });
 
       if (!response.ok) {
@@ -524,8 +480,6 @@ const UsersPage: React.FC = () => {
         text: 'Failed to upload profile picture',
         type: 'error'
       });
-    } finally {
-      setUploadProgress(false);
     }
   };
 
@@ -834,53 +788,20 @@ const UsersPage: React.FC = () => {
                       </div>
 
                       <div className="form-group profile-picture-group">
-                        <div className="profile-picture-container">
-                          {previewUrl ? (
-                            <img 
-                              src={previewUrl} 
-                              alt="Preview" 
-                              className="preview-image"
-                            />
-                          ) : userImages[selectedUser.id] ? (
-                            <img 
-                              src={userImages[selectedUser.id]} 
-                              alt="Current" 
-                              className="current-image"
-                            />
-                          ) : (
-                            <div className="default-avatar">
-                              {selectedUser.firstName.charAt(0).toUpperCase() +
-                              selectedUser.lastName.charAt(0).toUpperCase()}
-                            </div>
-                          )}
-                        </div>
-                        <div className="profile-picture-buttons">
-                          <input
-                            type="file"
-                            accept="image/jpeg,image/png,image/gif"
-                            onChange={handleProfilePictureChange}
-                            ref={fileInputRef}
-                            style={{ display: 'none' }}
-                          />
-                          <button
-                            type="button"
-                            className="profile-picture-upload-btn"
-                            onClick={() => fileInputRef.current?.click()}
-                            disabled={uploadProgress}
-                          >
-                            {uploadProgress ? 'Uploading...' : 'Change Picture'}
-                          </button>
-                          {userImages[selectedUser.id] && (
-                            <button
-                              type="button"
-                              className="profile-picture-delete-btn"
-                              onClick={() => handleDeleteProfilePicture(selectedUser.id)}
-                              disabled={uploadProgress}
-                            >
-                              Remove Picture
-                            </button>
-                          )}
-                        </div>
+                        <ProfilePictureUploader
+                          initials={selectedUser.firstName.charAt(0).toUpperCase() + selectedUser.lastName.charAt(0).toUpperCase()}
+                          imageUrl={previewUrl || userImages[selectedUser.id] || ''}
+                          onUpload={async (file) => {
+                            setPreviewUrl(URL.createObjectURL(file));
+                            await handleProfilePictureUpload(selectedUser.id, file);
+                          }}
+                          onDelete={async () => {
+                            await handleDeleteProfilePicture(selectedUser.id);
+                            setPreviewUrl(null);
+                          }}
+                          loading={isSubmitting}
+                          editable={true}
+                        />
                       </div>
 
                       <div className="form-actions">

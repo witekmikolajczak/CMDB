@@ -37,3 +37,7 @@ yarn-error.log*
 .DS_Store
 *.pem
 db-config.json
+
+
+# Docker Postgres
+docker
