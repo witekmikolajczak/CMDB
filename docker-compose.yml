@@ -1,0 +1,30 @@
+version: '3.9'
+services:
+  app:
+    build: .
+    command: npm run dev
+    volumes:
+      - .:/app
+      - /app/node_modules
+    ports:
+      - '3001:3001' # Adjust if your web/api runs on other ports
+      - '5173:5173' # Vite default
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgres://cmdb:cmdb@db:5432/cmdb
+    depends_on:
+      - db
+    working_dir: /app
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: cmdb
+      POSTGRES_PASSWORD: cmdb
+      POSTGRES_DB: cmdb
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+volumes:
+  pgdata:

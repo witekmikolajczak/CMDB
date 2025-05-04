@@ -520,69 +520,7 @@ interface DatabaseSetupProps {
           ) : (
             <form onSubmit={handleSubmit} className="setup-form">
               <h2>Create Admin User</h2>
-              <p className="form-description">
-                Create your administrator account. This account will have full access to the InvenTrack system.
-              </p>
-
-              <div className="form-group">
-                <label htmlFor="adminUsername">Username*</label>
-                <input
-                  type="text"
-                  id="adminUsername"
-                  name="adminUsername"
-                  value={formData.adminUsername}
-                  onChange={handleChange}
-                  placeholder="Enter admin username"
-                  className={errors.adminUsername ? 'error' : ''}
-                />
-                {errors.adminUsername && <div className="error-message">{errors.adminUsername}</div>}
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="adminEmail">Email*</label>
-                <input
-                  type="email"
-                  id="adminEmail"
-                  name="adminEmail"
-                  value={formData.adminEmail}
-                  onChange={handleChange}
-                  placeholder="Enter admin email"
-                  className={errors.adminEmail ? 'error' : ''}
-                />
-                {errors.adminEmail && <div className="error-message">{errors.adminEmail}</div>}
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="adminPassword">Password*</label>
-                <input
-                  type="password"
-                  id="adminPassword"
-                  name="adminPassword"
-                  value={formData.adminPassword}
-                  onChange={handleChange}
-                  placeholder="Minimum 8 characters"
-                  className={errors.adminPassword ? 'error' : ''}
-                />
-                {errors.adminPassword && <div className="error-message">{errors.adminPassword}</div>}
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="confirmPassword">Confirm Password*</label>
-                <input
-                  type="password"
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  placeholder="Re-enter password"
-                  className={errors.confirmPassword ? 'error' : ''}
-                />
-                {errors.confirmPassword && <div className="error-message">{errors.confirmPassword}</div>}
-              </div>
-
-              <div className="form-note">
-                This account will have full administrative privileges. Keep these credentials secure.
-              </div>
+              <p className="form-description"></p>
 
               <div className="form-actions">
                 <button type="button" className="secondary-btn" onClick={handleBack} disabled={isProcessing}>
