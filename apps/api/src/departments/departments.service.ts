@@ -1,185 +1,121 @@
-// apps/api/src/departments/departments.service.ts
 import { Injectable, Logger } from '@nestjs/common';
-import { Inject } from '@nestjs/common';
-import { PoolClient } from 'pg';
-import { DatabaseService } from '../database/database.service';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class DepartmentsService {
   private readonly logger = new Logger(DepartmentsService.name);
 
-  constructor(
-    private readonly databaseService: DatabaseService
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
+
   /**
-   * Find all departments
+   * Get all departments
    */
   async findAll() {
-    let client: PoolClient | null = null;
-    
-    try {
-      // Get database connection
-      if (!this.databaseService.getPool()) {
-        throw new Error('Database not configured');
-      }
-      
-      client = await this.databaseService.getPool()!.connect();
-      
-      // Query all departments
-      const result = await client?.query(
-        'SELECT id, name, description, parent_id FROM cmdb.departments ORDER BY name'
-      );
-      
-      return result?.rows || [];
-    } catch (error) {
-      this.logger.error(`Failed to fetch departments: ${error.message}`);
-      throw error;
-    } finally {
-      if (client) client.release();
-    }
+    // Using Prisma to fetch all departments
+    const departments = await this.prisma.department.findMany({
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        parentId: true,
+      },
+    });
+
+    return departments;
   }
 
   /**
    * Get the total count of departments
    */
-  async getDepartmentsCount() {
-    let client: PoolClient | null = null;
-    
-    try {
-      // Get database connection
-      if (!this.databaseService.getPool()) {
-        throw new Error('Database not configured');
-      }
-      
-      client = await this.databaseService.getPool()!.connect();
-      
-      // Query departments count
-      const result = await client?.query(
-        'SELECT COUNT(*) as count FROM cmdb.departments'
-      );
-      
-      return { count: parseInt(result?.rows[0].count) || 0 };
-    } catch (error) {
-      this.logger.error(`Failed to fetch departments count: ${error.message}`);
-      throw error;
-    } finally {
-      if (client) client.release();
-    }
+  async getDepartmentsCount(): Promise<{ count: number }> {
+    // Using Prisma to count departments
+    const count = await this.prisma.department.count();
+
+    return { count };
   }
 
   /**
    * Find department by ID
    */
   async findById(id: string) {
-    let client: PoolClient | null = null;
-    
-    try {
-      // Get database connection
-      if (!this.databaseService.getPool()) {
-        throw new Error('Database not configured');
-      }
-      
-      client = await this.databaseService.getPool()!.connect();
-      
-      // Query department by ID
-      const result = await client?.query(
-        'SELECT id, name, description, parent_id FROM cmdb.departments WHERE id = $1',
-        [id]
-      );
-      
-      return result?.rows[0] || null;
-    } catch (error) {
-      this.logger.error(`Failed to fetch department ${id}: ${error.message}`);
-      throw error;
-    } finally {
-      if (client) client.release();
-    }
+    // Convert string ID to number for Prisma
+    const numericId = parseInt(id, 10);
+
+    // Using Prisma to find department by ID
+    const department = await this.prisma.department.findUnique({
+      where: { id: numericId },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        parentId: true,
+      },
+    });
+
+    return department;
   }
 
   /**
    * Create a new department
    */
   async create(name: string, description: string, parentId: string | null) {
-    let client: PoolClient | null = null;
-    
-    try {
-      // Get database connection
-      if (!this.databaseService.getPool()) {
-        throw new Error('Database not configured');
-      }
-      
-      client = await this.databaseService.getPool()!.connect();
-      
-      // Insert new department
-      const result = await client?.query(
-        'INSERT INTO cmdb.departments (name, description, parent_id) VALUES ($1, $2, $3) RETURNING id',
-        [name, description, parentId]
-      );
-      
-      return result?.rows[0]?.id;
-    } catch (error) {
-      this.logger.error(`Failed to create department: ${error.message}`);
-      throw error;
-    } finally {
-      if (client) client.release();
-    }
+    const numericParentId = parentId ? parseInt(parentId, 10) : null;
+
+    // Using Prisma to create a new department
+    const department = await this.prisma.department.create({
+      data: {
+        name,
+        description,
+        parentId: numericParentId,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    return department.id;
   }
 
   /**
    * Update an existing department
    */
-  async update(id: string, name: string, description: string, parentId: string | null) {
-    let client: PoolClient | null = null;
-    
-    try {
-      // Get database connection
-      if (!this.databaseService.getPool()) {
-        throw new Error('Database not configured');
-      }
-      
-      client = await this.databaseService.getPool()!.connect();
-      
-      // Update department
-      await client?.query(
-        'UPDATE cmdb.departments SET name = $1, description = $2, parent_id = $3 WHERE id = $4',
-        [name, description, parentId, id]
-      );
-      
-      return true;
-    } catch (error) {
-      this.logger.error(`Failed to update department ${id}: ${error.message}`);
-      throw error;
-    } finally {
-      if (client) client.release();
-    }
+  async update(
+    id: string,
+    name: string,
+    description: string,
+    parentId: string | null,
+  ): Promise<boolean> {
+    // Convert string ID to number for Prisma
+    const numericId = parseInt(id, 10);
+
+    // Convert parentId from string to number if it's not null
+    const numericParentId = parentId ? parseInt(parentId, 10) : null;
+
+    // Using Prisma to update department
+    await this.prisma.department.update({
+      where: { id: numericId },
+      data: {
+        name,
+        description,
+        parentId: numericParentId,
+      },
+    });
+
+    return true;
   }
 
   /**
    * Delete a department
    */
-  async delete(id: string) {
-    let client: PoolClient | null = null;
-    
-    try {
-      // Get database connection
-      if (!this.databaseService.getPool()) {
-        throw new Error('Database not configured');
-      }
-      
-      client = await this.databaseService.getPool()!.connect();
-      
-      // Delete department
-      await client?.query(
-        'DELETE FROM cmdb.departments WHERE id = $1',
-        [id]
-      );
-      
-      return true;
-    } catch (error) {
-      this.logger.error(`Failed to delete department ${id}: ${error.message}`);
-      throw error;
-    } finally {
-      if (client) client.release();
-    }
+  async delete(id: string): Promise<boolean> {
+    // Convert string ID to number for Prisma
+    const numericId = parseInt(id, 10);
+
+    // Using Prisma to delete department
+    await this.prisma.department.delete({
+      where: { id: numericId },
+    });
+
+    return true;
   }
 }

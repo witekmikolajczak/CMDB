@@ -1,5 +1,10 @@
-// apps/api/src/auth/auth.guard.ts
-import { Injectable, CanActivate, ExecutionContext, UnauthorizedException, SetMetadata } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  UnauthorizedException,
+  SetMetadata,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { Reflector } from '@nestjs/core';
@@ -23,13 +28,16 @@ export class JwtAuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
-    
+
     // Check if the endpoint is public
-    const isPublic = this.reflector.get<boolean>(IS_PUBLIC_KEY, context.getHandler());
+    const isPublic = this.reflector.get<boolean>(
+      IS_PUBLIC_KEY,
+      context.getHandler(),
+    );
     if (isPublic) {
       return true;
     }
-    
+
     if (!token) {
       throw new UnauthorizedException('No authentication token provided');
     }
@@ -37,22 +45,25 @@ export class JwtAuthGuard implements CanActivate {
     try {
       // Verify the token
       const payload = await this.jwtService.verifyAsync(token, {
-        secret: JWT_SECRET
+        secret: JWT_SECRET,
       });
-      
+
       // Add user information to request
       request.user = payload;
-      
+
       // Check roles if required
-      const requiredRoles = this.reflector.get<string[]>(ROLES_KEY, context.getHandler());
+      const requiredRoles = this.reflector.get<string[]>(
+        ROLES_KEY,
+        context.getHandler(),
+      );
       if (requiredRoles && requiredRoles.length > 0) {
         if (!request.user.role || !requiredRoles.includes(request.user.role)) {
           throw new UnauthorizedException('Insufficient permissions');
         }
       }
-      
+
       return true;
-    } catch (error) {
+    } catch {
       throw new UnauthorizedException('Invalid or expired token');
     }
   }
@@ -68,7 +79,10 @@ export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const requiredRoles = this.reflector.get<string[]>(ROLES_KEY, context.getHandler());
+    const requiredRoles = this.reflector.get<string[]>(
+      ROLES_KEY,
+      context.getHandler(),
+    );
     if (!requiredRoles) {
       return true;
     }

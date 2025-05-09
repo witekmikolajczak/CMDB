@@ -1,11 +1,10 @@
-// apps/api/src/departments/departments.module.ts
 import { Module } from '@nestjs/common';
 import { DepartmentsController } from './departments.controller';
 import { DepartmentsService } from './departments.service';
-import { DatabaseModule } from '../database/database.module';
+import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
-  imports: [DatabaseModule],
+  imports: [PrismaModule],
   controllers: [DepartmentsController],
   providers: [DepartmentsService],
   exports: [DepartmentsService],

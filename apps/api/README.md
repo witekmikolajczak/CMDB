@@ -96,3 +96,35 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
+prisma+postgres://accelerate.prisma-data.net/?api_key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcGlfa2V5IjoiZjUzOGFjODQtZDAwZS00ZDljLThmOTctYjUyYzg5NmZkNWExIiwidGVuYW50X2lkIjoiZjU1MDRhYjUzYmVhNDE3NjYzNjNkNjEyOTAyOWRiMWJhZGMxYjUxZThjMmZhZTJkMGQzYjRiYjNiMmMwYzcyNyIsImludGVybmFsX3NlY3JldCI6IjFhOTlkZDdhLTdmOTAtNGNiOC1hYzQ3LTM2MjJjZWRkZTNkZCJ9.JeB8erNGweG5wL10icejdMhBA8baoFZ-QLMjxqAdQ1o
+
+--- Next steps ---
+
+Go to https://pris.ly/ppg-init for detailed instructions.
+
+1. Install and use the Prisma Accelerate extension
+   Prisma Postgres requires the Prisma Accelerate extension for querying. If you haven't already installed it, install it in your project:
+   npm install @prisma/extension-accelerate
+
+...and add it to your Prisma Client instance:
+import { withAccelerate } from "@prisma/extension-accelerate"
+
+const prisma = new PrismaClient().$extends(withAccelerate())
+
+2. Apply migrations
+   Run the following command to create and apply a migration:
+   npx prisma migrate dev
+
+3. Manage your data
+   View and edit your data locally by running this command:
+   npx prisma studio
+
+...or online in Console:
+https://console.prisma.io/cmah90ee4000ez7rwox3tivx8/cmah90y3r0009k7d026udedfz/cmah90y3r000ak7d0hc6vsjgy/studio
+
+4. Send queries from your app
+   If you already have an existing app with Prisma ORM, you can now run it and it will send queries against your newly created Prisma Postgres instance.
+
+5. Learn more
+   For more info, visit the Prisma Postgres docs: https://pris.ly/ppg-docs

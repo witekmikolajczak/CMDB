@@ -7,10 +7,12 @@ import { memoryStorage } from 'multer';
 import { UsersController } from './users.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { JWT_SECRET } from '../auth/auth.constants';
+import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
   imports: [
     DatabaseModule,
+    PrismaModule,
     MulterModule.register({
       storage: memoryStorage(),
     }),
