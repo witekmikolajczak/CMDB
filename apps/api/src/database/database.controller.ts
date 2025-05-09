@@ -1,6 +1,16 @@
-// apps/api/src/database/database.controller.ts
-import { Controller, Post, Body, HttpException, HttpStatus, Get } from '@nestjs/common';
-import { DatabaseService, DatabaseConnectionConfig, AdminUserConfig } from './database.service';
+import {
+  Controller,
+  Post,
+  Body,
+  HttpException,
+  HttpStatus,
+  Get,
+} from '@nestjs/common';
+import {
+  DatabaseService,
+  DatabaseConnectionConfig,
+  AdminUserConfig,
+} from './database.service';
 import { DatabaseConfigService } from './database-config.service';
 import { Public } from '../auth/auth.guard';
 
@@ -8,14 +18,14 @@ import { Public } from '../auth/auth.guard';
 export class DatabaseController {
   constructor(
     private readonly databaseService: DatabaseService,
-    private readonly databaseConfigService: DatabaseConfigService
+    private readonly databaseConfigService: DatabaseConfigService,
   ) {}
 
   @Public()
   @Get('status')
-  async getStatus() {
+  getStatus() {
     return {
-      isConfigured: this.databaseConfigService.isDatabaseConfigured()
+      isConfigured: this.databaseConfigService.isDatabaseConfigured(),
     };
   }
 
@@ -27,21 +37,21 @@ export class DatabaseController {
       if (config.password && typeof config.password !== 'string') {
         config.password = String(config.password);
       }
-      
+
       const result = await this.databaseService.testConnection(config);
-      
+
       if (!result.success) {
         throw new HttpException(result.message, HttpStatus.BAD_REQUEST);
       }
-      
+
       return result;
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
       }
       throw new HttpException(
-        `Database connection test failed: ${error.message || 'Unknown error'}`, 
-        HttpStatus.INTERNAL_SERVER_ERROR
+        `Database connection test failed: ${error}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -50,34 +60,38 @@ export class DatabaseController {
   @Post('execute-schema')
   async executeSchema(@Body() config: DatabaseConnectionConfig) {
     const result = await this.databaseService.executeDatabaseSchema(config);
-    
+
     if (!result.success) {
       throw new HttpException(result.message, HttpStatus.BAD_REQUEST);
     }
-    
+
     return result;
   }
 
   @Public()
   @Post('create-admin')
   async createAdminUser(
-    @Body() payload: { dbConfig: DatabaseConnectionConfig, adminConfig: AdminUserConfig }
+    @Body()
+    payload: {
+      dbConfig: DatabaseConnectionConfig;
+      adminConfig: AdminUserConfig;
+    },
   ) {
     const result = await this.databaseService.createAdminUser(
-      payload.dbConfig, 
-      payload.adminConfig
+      payload.dbConfig,
+      payload.adminConfig,
     );
-    
+
     if (!result.success) {
       throw new HttpException(result.message, HttpStatus.BAD_REQUEST);
     }
-    
+
     // Save the database configuration
     this.databaseConfigService.saveConfig({
       ...payload.dbConfig,
-      isConfigured: true
+      isConfigured: true,
     });
-    
+
     return result;
   }
 
@@ -93,25 +107,26 @@ export class DatabaseController {
           port: savedConfig.port,
           database: savedConfig.database,
           username: savedConfig.username,
-          password: savedConfig.password
+          password: savedConfig.password,
         };
       }
     }
-    
+
     // Ensure we have config
     if (!config) {
       throw new HttpException(
-        'Database configuration not provided and no saved configuration found.', 
-        HttpStatus.BAD_REQUEST
+        'Database configuration not provided and no saved configuration found.',
+        HttpStatus.BAD_REQUEST,
       );
     }
-    
-    const result = await this.databaseService.clearDatabaseAndRecreateSchema(config);
-    
+
+    const result =
+      await this.databaseService.clearDatabaseAndRecreateSchema(config);
+
     if (!result.success) {
       throw new HttpException(result.message, HttpStatus.BAD_REQUEST);
     }
-    
+
     return result;
   }
 }
