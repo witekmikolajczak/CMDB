@@ -1,123 +1,95 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PoolClient } from 'pg';
-import { DatabaseService } from '../database/database.service';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class DepartmentsService {
   private readonly logger = new Logger(DepartmentsService.name);
 
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(private readonly prisma: PrismaService) {}
   /**
    * Find all departments
    */
   async findAll() {
-    let client: PoolClient | null = null;
-
     try {
-      // Get database connection
-      if (!this.databaseService.getPool()) {
-        throw new Error('Database not configured');
-      }
+      // Using Prisma to fetch all departments
+      const departments = await this.prisma.department.findMany({
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          parentId: true,
+        },
+        orderBy: {
+          name: 'asc',
+        },
+      });
 
-      client = await this.databaseService.getPool()!.connect();
-
-      // Query all departments
-      const result = await client?.query(
-        'SELECT id, name, description, parent_id FROM cmdb.departments ORDER BY name',
-      );
-
-      return result?.rows || [];
+      return departments;
     } catch (error) {
       this.logger.error(`Failed to fetch departments: ${error}`);
       throw error;
-    } finally {
-      if (client) client.release();
     }
   }
 
   /**
    * Get the total count of departments
    */
-  async getDepartmentsCount() {
-    let client: PoolClient | null = null;
-
+  async getDepartmentsCount(): Promise<{ count: number }> {
     try {
-      // Get database connection
-      if (!this.databaseService.getPool()) {
-        throw new Error('Database not configured');
-      }
+      // Using Prisma to count departments
+      const count = await this.prisma.department.count();
 
-      client = await this.databaseService.getPool()!.connect();
-
-      // Query departments count
-      const result = await client?.query(
-        'SELECT COUNT(*) as count FROM cmdb.departments',
-      );
-
-      return { count: parseInt(result?.rows[0].count) || 0 };
+      return { count };
     } catch (error) {
-      this.logger.error(`Failed to fetch departments count: ${error.message}`);
+      this.logger.error(`Failed to fetch departments count: ${error}`);
       throw error;
-    } finally {
-      if (client) client.release();
     }
   }
 
   /**
    * Find department by ID
    */
-  async findById(id: string) {
-    let client: PoolClient | null = null;
-
+  async findById(id: number) {
     try {
-      // Get database connection
-      if (!this.databaseService.getPool()) {
-        throw new Error('Database not configured');
-      }
+      // Using Prisma to find department by ID
+      const department = await this.prisma.department.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          parentId: true,
+        },
+      });
 
-      client = await this.databaseService.getPool()!.connect();
-
-      // Query department by ID
-      const result = await client?.query(
-        'SELECT id, name, description, parent_id FROM cmdb.departments WHERE id = $1',
-        [id],
-      );
-
-      return result?.rows[0] || null;
+      return department;
     } catch (error) {
       this.logger.error(`Failed to fetch department ${id}: ${error}`);
       throw error;
-    } finally {
-      if (client) client.release();
     }
   }
 
   /**
    * Create a new department
    */
-  async create(name: string, description: string, parentId: string | null) {
-    let client: PoolClient | null = null;
-
+  async create(name: string, description: string, parentId: number | null) {
     try {
-      // Get database connection
-      if (!this.databaseService.getPool()) {
-        throw new Error('Database not configured');
-      }
+      // Using Prisma to create a new department
+      const department = await this.prisma.department.create({
+        data: {
+          name,
+          description,
+          parentId,
+        },
+        select: {
+          id: true,
+        },
+      });
 
-      client = await this.databaseService.getPool()!.connect();
-
-      // Insert new department
-      const result = await client?.query(
-        'INSERT INTO cmdb.departments (name, description, parent_id) VALUES ($1, $2, $3) RETURNING id',
-        [name, description, parentId],
-      );
-
-      return result?.rows[0]?.id;
+      return department.id;
     } catch (error) {
       this.logger.error(`Failed to create department: ${error}`);
       throw error;
-    } finally {
-      if (client) client.release();
     }
   }
 
@@ -125,59 +97,43 @@ export class DepartmentsService {
    * Update an existing department
    */
   async update(
-    id: string,
+    id: number,
     name: string,
     description: string,
-    parentId: string | null,
-  ) {
-    let client: PoolClient | null = null;
-
+    parentId: number | null,
+  ): Promise<boolean> {
     try {
-      // Get database connection
-      if (!this.databaseService.getPool()) {
-        throw new Error('Database not configured');
-      }
-
-      client = await this.databaseService.getPool()!.connect();
-
-      // Update department
-      await client?.query(
-        'UPDATE cmdb.departments SET name = $1, description = $2, parent_id = $3 WHERE id = $4',
-        [name, description, parentId, id],
-      );
+      // Using Prisma to update department
+      await this.prisma.department.update({
+        where: { id },
+        data: {
+          name,
+          description,
+          parentId,
+        },
+      });
 
       return true;
     } catch (error) {
       this.logger.error(`Failed to update department ${id}: ${error}`);
       throw error;
-    } finally {
-      if (client) client.release();
     }
   }
 
   /**
    * Delete a department
    */
-  async delete(id: string) {
-    let client: PoolClient | null = null;
-
+  async delete(id: number): Promise<boolean> {
     try {
-      // Get database connection
-      if (!this.databaseService.getPool()) {
-        throw new Error('Database not configured');
-      }
-
-      client = await this.databaseService.getPool()!.connect();
-
-      // Delete department
-      await client?.query('DELETE FROM cmdb.departments WHERE id = $1', [id]);
+      // Using Prisma to delete department
+      await this.prisma.department.delete({
+        where: { id },
+      });
 
       return true;
     } catch (error) {
       this.logger.error(`Failed to delete department ${id}: ${error}`);
       throw error;
-    } finally {
-      if (client) client.release();
     }
   }
 }
