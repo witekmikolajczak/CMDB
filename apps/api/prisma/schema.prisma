@@ -1,0 +1,511 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  schemas    = ["cmdb", "public"]
+}
+
+// Departments
+model Department {
+  id          Int         @id @default(autoincrement())
+  name        String      @db.VarChar(100)
+  description String?     @db.Text
+  parentId    Int?        @map("parent_id")
+  createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime    @default(now()) @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  parent      Department? @relation("DepartmentToDepartment", fields: [parentId], references: [id], onDelete: SetNull)
+  children    Department[] @relation("DepartmentToDepartment")
+  users       User[]
+  assets      Asset[]
+
+  @@schema("cmdb")
+}
+
+// Locations
+model Location {
+  id         Int       @id @default(autoincrement())
+  name       String    @db.VarChar(100)
+  address    String?   @db.Text
+  city       String?   @db.VarChar(100)
+  state      String?   @db.VarChar(100)
+  postalCode String?   @map("postal_code") @db.VarChar(20)
+  country    String?   @db.VarChar(100)
+  notes      String?   @db.Text
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt  DateTime  @default(now()) @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  users      User[]
+  assets     Asset[]
+
+  @@schema("cmdb")
+}
+
+// User Roles
+model Role {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique @db.VarChar(50)
+  description String?   @db.Text
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime  @default(now()) @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  users       User[]
+
+  @@schema("cmdb")
+}
+
+// User Statuses
+model UserStatus {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique @db.VarChar(50)
+  description String?   @db.Text
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime  @default(now()) @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  users       User[]
+
+  @@map("user_statuses")
+  @@schema("cmdb")
+}
+
+// Users
+model User {
+  id               String    @id @default(uuid()) @db.Uuid
+  username         String    @unique @db.VarChar(50)
+  passwordHash     String    @map("password_hash") @db.VarChar(255)
+  email            String    @unique @db.VarChar(255)
+  firstName        String    @map("first_name") @db.VarChar(100)
+  lastName         String    @map("last_name") @db.VarChar(100)
+  employeeId       String?   @unique @map("employee_id") @db.VarChar(50)
+  phone            String?   @db.VarChar(50)
+  roleId           Int       @map("role_id")
+  statusId         Int       @map("status_id")
+  departmentId     Int?      @map("department_id")
+  managerId        String?   @map("manager_id") @db.Uuid
+  locationId       Int?      @map("location_id")
+  positionTitle    String?   @map("position_title") @db.VarChar(100)
+  building         String?   @db.VarChar(100)
+  roomNumber       String?   @map("room_number") @db.VarChar(20)
+  hireDate         DateTime? @map("hire_date") @db.Date
+  lastLogin        DateTime? @map("last_login") @db.Timestamptz()
+  profilePicture   Bytes?    @map("profile_picture") @db.ByteA
+  profilePictureType String? @map("profile_picture_type") @db.VarChar(100)
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt        DateTime  @default(now()) @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  role                Role         @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  status              UserStatus   @relation(fields: [statusId], references: [id], onDelete: Restrict)
+  department          Department?  @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  manager             User?        @relation("UserToManager", fields: [managerId], references: [id], onDelete: SetNull)
+  subordinates        User[]       @relation("UserToManager")
+  location            Location?    @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  createdAssets       Asset[]      @relation("AssetCreatedBy")
+  assignmentsReceived AssetAssignment[] @relation("AssignedTo")
+  assignmentsMade     AssetAssignment[] @relation("AssignedBy")
+  maintenancePerformed AssetMaintenance[] @relation("MaintenanceCreatedBy")
+  assignmentHistoryReceived AssignmentHistory[] @relation("HistoryAssignedTo")
+  assignmentHistoryMade AssignmentHistory[] @relation("HistoryAssignedBy")
+  protocolsUser       Protocol[]   @relation("ProtocolsUser")
+  protocolsAdmin      Protocol[]   @relation("ProtocolsAdmin")
+  notifications       Notification[]
+  reports             Report[]     @relation("ReportCreatedBy")
+  reportResults       ReportResult[] @relation("ReportResultGeneratedBy")
+  auditLogs           AuditLog[]
+  userCustomFields    UserCustomField[]
+
+  @@schema("cmdb")
+}
+
+// Asset Categories
+model AssetCategory {
+  id          Int            @id @default(autoincrement())
+  name        String         @db.VarChar(100)
+  description String?        @db.Text
+  parentId    Int?           @map("parent_id")
+  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime       @default(now()) @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  parent      AssetCategory? @relation("AssetCategoryToCategory", fields: [parentId], references: [id], onDelete: SetNull)
+  children    AssetCategory[] @relation("AssetCategoryToCategory")
+  assetTypes  AssetType[]
+
+  @@map("asset_categories")
+  @@schema("cmdb")
+}
+
+// Asset Types
+model AssetType {
+  id              Int           @id @default(autoincrement())
+  name            String        @db.VarChar(100)
+  description     String?       @db.Text
+  categoryId      Int           @map("category_id")
+  hasSerialNumber Boolean       @default(true) @map("has_serial_number")
+  hasMacAddress   Boolean       @default(false) @map("has_mac_address")
+  hasImei         Boolean       @default(false) @map("has_imei")
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt       DateTime      @default(now()) @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  category        AssetCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  assets          Asset[]
+
+  @@map("asset_types")
+  @@schema("cmdb")
+}
+
+// Vendors
+model Vendor {
+  id            Int       @id @default(autoincrement())
+  name          String    @db.VarChar(100)
+  contactPerson String?   @map("contact_person") @db.VarChar(100)
+  email         String?   @db.VarChar(255)
+  phone         String?   @db.VarChar(50)
+  website       String?   @db.VarChar(255)
+  address       String?   @db.Text
+  notes         String?   @db.Text
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt     DateTime  @default(now()) @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  assets        Asset[]
+
+  @@map("vendors")
+  @@schema("cmdb")
+}
+
+// Assets
+model Asset {
+  id                String    @id @default(uuid()) @db.Uuid
+  assetTag          String    @unique @map("asset_tag") @db.VarChar(100)
+  name              String    @db.VarChar(255)
+  description       String?   @db.Text
+  assetTypeId       Int       @map("asset_type_id")
+  serialNumber      String?   @unique @map("serial_number") @db.VarChar(100)
+  macAddress        String?   @map("mac_address") @db.VarChar(50)
+  imei              String?   @db.VarChar(50)
+  status            String    @default("available") @db.VarChar(50)
+  acquisitionDate   DateTime? @map("acquisition_date") @db.Date
+  acquisitionCost   Decimal?  @map("acquisition_cost") @db.Decimal(12, 2)
+  vendorId          Int?      @map("vendor_id")
+  warrantyStartDate DateTime? @map("warranty_start_date") @db.Date
+  warrantyEndDate   DateTime? @map("warranty_end_date") @db.Date
+  expectedLifetimeMonths Int? @map("expected_lifetime_months")
+  make              String?   @db.VarChar(100)
+  model             String?   @db.VarChar(100)
+  specifications    String?   @db.Text
+  notes             String?   @db.Text
+  departmentId      Int?      @map("department_id")
+  locationId        Int?      @map("location_id")
+  createdById       String?   @map("created_by") @db.Uuid
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt         DateTime  @default(now()) @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  assetType         AssetType @relation(fields: [assetTypeId], references: [id], onDelete: Restrict)
+  vendor            Vendor?   @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+  department        Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  location          Location? @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  createdBy         User?     @relation("AssetCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  maintenance       AssetMaintenance[]
+  assignments       AssetAssignment[]
+  assignmentHistory AssignmentHistory[]
+  protocols         Protocol[]
+  notifications     Notification[]
+  customFields      AssetCustomField[]
+
+  @@map("assets")
+  @@schema("cmdb")
+}
+
+// Asset Maintenance
+model AssetMaintenance {
+  id              Int       @id @default(autoincrement())
+  assetId         String    @map("asset_id") @db.Uuid
+  maintenanceDate DateTime  @map("maintenance_date") @db.Date
+  maintenanceType String    @map("maintenance_type") @db.VarChar(100)
+  description     String?   @db.Text
+  performedBy     String?   @map("performed_by") @db.VarChar(255)
+  cost            Decimal?  @db.Decimal(12, 2)
+  status          String?   @db.VarChar(50)
+  notes           String?   @db.Text
+  createdById     String?   @map("created_by") @db.Uuid
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt       DateTime  @default(now()) @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  asset           Asset     @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  createdBy       User?     @relation("MaintenanceCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@map("asset_maintenance")
+  @@schema("cmdb")
+}
+
+// Asset Assignments
+model AssetAssignment {
+  id                    String    @id @default(uuid()) @db.Uuid
+  assetId               String    @map("asset_id") @db.Uuid
+  assignedToId          String    @map("assigned_to") @db.Uuid
+  assignedById          String?   @map("assigned_by") @db.Uuid
+  assignmentDate        DateTime  @default(now()) @map("assignment_date") @db.Timestamptz()
+  expectedReturnDate    DateTime? @map("expected_return_date") @db.Timestamptz()
+  actualReturnDate      DateTime? @map("actual_return_date") @db.Timestamptz()
+  status                String    @default("active") @db.VarChar(50)
+  purpose               String?   @db.Text
+  notes                 String?   @db.Text
+  conditionOnAssignment String?   @map("condition_on_assignment") @db.Text
+  conditionOnReturn     String?   @map("condition_on_return") @db.Text
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt             DateTime  @default(now()) @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  asset                 Asset     @relation(fields: [assetId], references: [id], onDelete: Restrict)
+  assignedTo            User      @relation("AssignedTo", fields: [assignedToId], references: [id], onDelete: Restrict)
+  assignedBy            User?     @relation("AssignedBy", fields: [assignedById], references: [id], onDelete: SetNull)
+  protocols             Protocol[]
+  notifications         Notification[]
+
+  @@map("asset_assignments")
+  @@schema("cmdb")
+}
+
+// Assignment History
+model AssignmentHistory {
+  id                    String    @id @default(uuid()) @db.Uuid
+  assetId               String    @map("asset_id") @db.Uuid
+  assignedToId          String    @map("assigned_to") @db.Uuid
+  assignedById          String?   @map("assigned_by") @db.Uuid
+  assignmentDate        DateTime  @map("assignment_date") @db.Timestamptz()
+  returnDate            DateTime  @map("return_date") @db.Timestamptz()
+  status                String    @db.VarChar(50)
+  purpose               String?   @db.Text
+  notes                 String?   @db.Text
+  conditionOnAssignment String?   @map("condition_on_assignment") @db.Text
+  conditionOnReturn     String?   @map("condition_on_return") @db.Text
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+
+  // Relations
+  asset                 Asset     @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  assignedTo            User      @relation("HistoryAssignedTo", fields: [assignedToId], references: [id], onDelete: Cascade)
+  assignedBy            User?     @relation("HistoryAssignedBy", fields: [assignedById], references: [id], onDelete: SetNull)
+
+  @@map("assignment_history")
+  @@schema("cmdb")
+}
+
+// Protocols
+model Protocol {
+  id              String    @id @default(uuid()) @db.Uuid
+  referenceNumber String    @unique @map("reference_number") @db.VarChar(100)
+  protocolType    String    @map("protocol_type") @db.VarChar(50)
+  title           String    @db.VarChar(255)
+  assignmentId    String?   @map("assignment_id") @db.Uuid
+  userId          String?   @map("user_id") @db.Uuid
+  adminId         String?   @map("admin_id") @db.Uuid
+  assetId         String?   @map("asset_id") @db.Uuid
+  generatedDate   DateTime  @default(now()) @map("generated_date") @db.Timestamptz()
+  documentPath    String?   @map("document_path") @db.VarChar(512)
+  signedDate      DateTime? @map("signed_date") @db.Timestamptz()
+  signatureUser   Bytes?    @map("signature_user") @db.ByteA
+  signatureAdmin  Bytes?    @map("signature_admin") @db.ByteA
+  termsAndConditions String? @map("terms_and_conditions") @db.Text
+  notes           String?   @db.Text
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt       DateTime  @default(now()) @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  assignment      AssetAssignment? @relation(fields: [assignmentId], references: [id], onDelete: SetNull)
+  user            User?        @relation("ProtocolsUser", fields: [userId], references: [id], onDelete: SetNull)
+  admin           User?        @relation("ProtocolsAdmin", fields: [adminId], references: [id], onDelete: SetNull)
+  asset           Asset?       @relation(fields: [assetId], references: [id], onDelete: SetNull)
+
+  @@map("protocols")
+  @@schema("cmdb")
+}
+
+// Notifications
+model Notification {
+  id                  Int       @id @default(autoincrement())
+  userId              String    @map("user_id") @db.Uuid
+  notificationType    String    @map("notification_type") @db.VarChar(50)
+  title               String    @db.VarChar(255)
+  message             String    @db.Text
+  relatedAssetId      String?   @map("related_asset_id") @db.Uuid
+  relatedAssignmentId String?   @map("related_assignment_id") @db.Uuid
+  isRead              Boolean   @default(false) @map("is_read")
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+
+  // Relations
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  relatedAsset        Asset?    @relation(fields: [relatedAssetId], references: [id], onDelete: SetNull)
+  relatedAssignment   AssetAssignment? @relation(fields: [relatedAssignmentId], references: [id], onDelete: SetNull)
+
+  @@map("notifications")
+  @@schema("cmdb")
+}
+
+// Custom Fields Definition
+model CustomFieldDefinition {
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar(100)
+  description String?   @db.Text
+  fieldType   String    @map("field_type") @db.VarChar(50)
+  entityType  String    @map("entity_type") @db.VarChar(50)
+  isRequired  Boolean   @default(false) @map("is_required")
+  options     String?   @db.Text
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime  @default(now()) @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  assetCustomFields AssetCustomField[]
+  userCustomFields  UserCustomField[]
+
+  @@map("custom_field_definitions")
+  @@schema("cmdb")
+}
+
+// Custom Field Values for Assets
+model AssetCustomField {
+  id        Int       @id @default(autoincrement())
+  assetId   String    @map("asset_id") @db.Uuid
+  fieldId   Int       @map("field_id")
+  value     String?   @db.Text
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @default(now()) @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  asset     Asset     @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  field     CustomFieldDefinition @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+
+  @@unique([assetId, fieldId])
+  @@map("asset_custom_fields")
+  @@schema("cmdb")
+}
+
+// Custom Field Values for Users
+model UserCustomField {
+  id        Int       @id @default(autoincrement())
+  userId    String    @map("user_id") @db.Uuid
+  fieldId   Int       @map("field_id")
+  value     String?   @db.Text
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @default(now()) @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  field     CustomFieldDefinition @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, fieldId])
+  @@map("user_custom_fields")
+  @@schema("cmdb")
+}
+
+// Reports
+model Report {
+  id             Int       @id @default(autoincrement())
+  name           String    @db.VarChar(255)
+  description    String?   @db.Text
+  reportType     String    @map("report_type") @db.VarChar(100)
+  parameters     Json?     @db.JsonB
+  createdById    String?   @map("created_by") @db.Uuid
+  lastGenerated  DateTime? @map("last_generated") @db.Timestamptz()
+  scheduleType   String?   @map("schedule_type") @db.VarChar(50)
+  scheduleDetails Json?    @map("schedule_details") @db.JsonB
+  recipients     Json?     @db.JsonB
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt      DateTime  @default(now()) @map("updated_at") @db.Timestamptz()
+
+  // Relations
+  createdBy      User?     @relation("ReportCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  reportResults  ReportResult[]
+
+  @@map("reports")
+  @@schema("cmdb")
+}
+
+// Report Results
+model ReportResult {
+  id            Int       @id @default(autoincrement())
+  reportId      Int       @map("report_id")
+  generatedAt   DateTime  @default(now()) @map("generated_at") @db.Timestamptz()
+  generatedById String?   @map("generated_by") @db.Uuid
+  filePath      String?   @map("file_path") @db.VarChar(512)
+  fileType      String?   @map("file_type") @db.VarChar(50)
+  fileSize      Int?      @map("file_size")
+  isScheduled   Boolean   @default(false) @map("is_scheduled")
+  status        String?   @db.VarChar(50)
+  parametersUsed Json?    @map("parameters_used") @db.JsonB
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+
+  // Relations
+  report        Report    @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  generatedBy   User?     @relation("ReportResultGeneratedBy", fields: [generatedById], references: [id], onDelete: SetNull)
+
+  @@map("report_results")
+  @@schema("cmdb")
+}
+
+// Audit Log
+model AuditLog {
+  id         Int       @id @default(autoincrement())
+  userId     String?   @map("user_id") @db.Uuid
+  action     String    @db.VarChar(100)
+  entityType String    @map("entity_type") @db.VarChar(100)
+  entityId   String    @map("entity_id") @db.VarChar(100)
+  oldValues  Json?     @map("old_values") @db.JsonB
+  newValues  Json?     @map("new_values") @db.JsonB
+  ipAddress  String?   @map("ip_address") @db.VarChar(50)
+  userAgent  String?   @map("user_agent") @db.Text
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+
+  // Relations
+  user       User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("audit_log")
+  @@schema("cmdb")
+}
+
+// System Settings
+model SystemSetting {
+  id          Int       @id @default(autoincrement())
+  settingKey  String    @unique @map("setting_key") @db.VarChar(100)
+  settingValue String?  @map("setting_value") @db.Text
+  settingGroup String   @map("setting_group") @db.VarChar(100)
+  description String?   @db.Text
+  isEditable  Boolean   @default(true) @map("is_editable")
+  dataType    String    @map("data_type") @db.VarChar(50)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime  @default(now()) @map("updated_at") @db.Timestamptz()
+
+  @@map("system_settings")
+  @@schema("cmdb")
+}
+
+// Email Templates
+model EmailTemplate {
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar(100)
+  description String?   @db.Text
+  subject     String    @db.VarChar(255)
+  body        String    @db.Text
+  templateType String   @map("template_type") @db.VarChar(100)
+  variables   Json?     @db.JsonB
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime  @default(now()) @map("updated_at") @db.Timestamptz()
+
+  @@map("email_templates")
+  @@schema("cmdb")
+}

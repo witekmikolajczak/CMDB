@@ -109,7 +109,7 @@ export class DatabaseService {
   }
 
   /**
-   * Execute the database schema SQL file
+   * Execute the database schema using Prisma migrations
    */
   async executeDatabaseSchema(
     config: DatabaseConnectionConfig,
@@ -150,74 +150,54 @@ export class DatabaseService {
           SET session_replication_role = DEFAULT;
         `);
 
-        // Path to the schema SQL file
-        const schemaFilePath = path.join(
-          process.cwd(),
-          'schema',
-          'cmdb_schema.sql',
-        );
-        const schemaSql = fs.readFileSync(schemaFilePath, 'utf8');
+        client.release();
 
-        // Execute the schema SQL file - but skip the schema creation since we've already done it
-        // Extract the actual table creation and other statements (skip the first few lines that create schema and set search path)
-        const sqlLines = schemaSql.split('\n');
-        let processedSql = '';
+        // Create a .env file for Prisma with the database connection URL
+        const databaseUrl = `postgresql://${config.username}:${config.password}@${config.hostname}:${config.port}/${config.database}?schema=cmdb`;
+        
+        // Create .env file for prisma in the project root
+        const envFilePath = path.join(process.cwd(), '.env');
+        fs.writeFileSync(envFilePath, `DATABASE_URL="${databaseUrl}"
+`);
 
-        console.log('Reading schema SQL file with length:', sqlLines.length);
+        console.log('Created .env file with DATABASE_URL for Prisma');
 
-        for (const line of sqlLines) {
-          // Skip these lines since we already handle them
-          if (
-            line.includes('CREATE SCHEMA') ||
-            line.includes('SET search_path')
-          ) {
-            console.log('Skipping line:', line);
-            continue;
-          }
+        // Run Prisma migrations using child_process
+        const { execSync } = require('child_process');
+        console.log('Running Prisma migrations...');
+        
+        try {
+          // Generate Prisma client
+          execSync('npx prisma generate', {
+            stdio: 'inherit',
+            cwd: process.cwd(),
+          });
 
-          // Add all other lines
-          processedSql += line + '\n';
+          // Deploy migrations
+          execSync('npx prisma migrate deploy', {
+            stdio: 'inherit',
+            cwd: process.cwd(),
+          });
+
+          console.log('Successfully executed Prisma migrations');
+
+          return {
+            success: true,
+            message: 'Database schema created successfully using Prisma migrations!',
+          };
+        } catch (migrationError) {
+          console.error('Prisma migration error:', migrationError);
+          return {
+            success: false,
+            message: `Prisma migration failed: ${migrationError.message || 'Unknown error'}`,
+          };
         }
-
-        console.log('Processed SQL length:', processedSql.length);
-
-        // Execute each statement separately
-        const statements = processedSql
-          .split(';')
-          .filter((stmt) => stmt.trim() !== '');
-        console.log('Total statements to execute:', statements.length);
-
-        for (let i = 0; i < statements.length; i++) {
-          const stmt = statements[i].trim() + ';';
-          if (stmt.length > 10) {
-            // Skip empty statements
-            try {
-              await client.query(stmt);
-            } catch (error) {
-              console.error(
-                `Error executing statement ${i + 1}/${statements.length}:`,
-                error.message,
-              );
-              console.error('Statement:', stmt.substring(0, 100) + '...');
-              throw error;
-            }
-          }
-        }
-
-        console.log('Successfully executed all SQL statements');
-
-        return {
-          success: true,
-          message: 'Database schema created successfully!',
-        };
       } catch (error) {
         console.error('Schema execution error:', error);
         return {
           success: false,
           message: `Schema execution failed: ${error.message || 'Unknown error'}`,
         };
-      } finally {
-        client.release();
       }
     } catch (error) {
       console.error('Database operation error:', error);
