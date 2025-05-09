@@ -1,69 +1,55 @@
-// apps/api/src/assignments/assignments.service.ts
 import { Injectable, Logger } from '@nestjs/common';
-import { DatabaseService } from '../database/database.service';
-import { PoolClient } from 'pg';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class AssignmentsService {
   private readonly logger = new Logger(AssignmentsService.name);
 
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   /**
    * Get the total count of active assignments
    */
-  async getActiveAssignmentsCount() {
-    let client: PoolClient | null = null;
-
+  async getActiveAssignmentsCount(): Promise<{ count: number }> {
     try {
-      // Get database connection
-      if (!this.databaseService.getPool()) {
-        throw new Error('Database not configured');
-      }
+      // Using Prisma to count active assignments
+      const count = await this.prisma.assetAssignment.count({
+        where: {
+          status: 'active',
+        },
+      });
 
-      client = await this.databaseService.getPool()!.connect();
-
-      // Query active assignments count
-      const result = await client?.query(
-        "SELECT COUNT(*) as count FROM cmdb.asset_assignments WHERE status = 'active'",
-      );
-
-      return { count: parseInt(result?.rows[0].count) || 0 };
+      return { count };
     } catch (error) {
       this.logger.error(`Failed to fetch active assignments count: ${error}`);
       throw error;
-    } finally {
-      if (client) client.release();
     }
   }
 
   /**
    * Get the count of assignments created this week
    */
-  async getAssignmentsCountThisWeek() {
-    let client: PoolClient | null = null;
-
+  async getAssignmentsCountThisWeek(): Promise<{ count: number }> {
     try {
-      // Get database connection
-      if (!this.databaseService.getPool()) {
-        throw new Error('Database not configured');
-      }
+      // Calculate the date one week ago
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
-      client = await this.databaseService.getPool()!.connect();
+      // Using Prisma to count assignments created in the last week
+      const count = await this.prisma.assetAssignment.count({
+        where: {
+          assignmentDate: {
+            gte: oneWeekAgo,
+          },
+        },
+      });
 
-      // Query assignments count for this week
-      const result = await client?.query(
-        "SELECT COUNT(*) as countweek FROM cmdb.asset_assignments WHERE assignment_date >= NOW() - INTERVAL '1 week'",
-      );
-
-      return { count: parseInt(result?.rows[0].countweek) || 0 };
+      return { count };
     } catch (error) {
       this.logger.error(
         `Failed to fetch assignments count for this week: ${error}`,
       );
       throw error;
-    } finally {
-      if (client) client.release();
     }
   }
 }
