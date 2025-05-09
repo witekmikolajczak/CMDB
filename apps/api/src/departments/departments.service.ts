@@ -6,134 +6,116 @@ export class DepartmentsService {
   private readonly logger = new Logger(DepartmentsService.name);
 
   constructor(private readonly prisma: PrismaService) {}
+
   /**
-   * Find all departments
+   * Get all departments
    */
   async findAll() {
-    try {
-      // Using Prisma to fetch all departments
-      const departments = await this.prisma.department.findMany({
-        select: {
-          id: true,
-          name: true,
-          description: true,
-          parentId: true,
-        },
-        orderBy: {
-          name: 'asc',
-        },
-      });
+    // Using Prisma to fetch all departments
+    const departments = await this.prisma.department.findMany({
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        parentId: true,
+      },
+    });
 
-      return departments;
-    } catch (error) {
-      this.logger.error(`Failed to fetch departments: ${error}`);
-      throw error;
-    }
+    return departments;
   }
 
   /**
    * Get the total count of departments
    */
   async getDepartmentsCount(): Promise<{ count: number }> {
-    try {
-      // Using Prisma to count departments
-      const count = await this.prisma.department.count();
+    // Using Prisma to count departments
+    const count = await this.prisma.department.count();
 
-      return { count };
-    } catch (error) {
-      this.logger.error(`Failed to fetch departments count: ${error}`);
-      throw error;
-    }
+    return { count };
   }
 
   /**
    * Find department by ID
    */
-  async findById(id: number) {
-    try {
-      // Using Prisma to find department by ID
-      const department = await this.prisma.department.findUnique({
-        where: { id },
-        select: {
-          id: true,
-          name: true,
-          description: true,
-          parentId: true,
-        },
-      });
+  async findById(id: string) {
+    // Convert string ID to number for Prisma
+    const numericId = parseInt(id, 10);
 
-      return department;
-    } catch (error) {
-      this.logger.error(`Failed to fetch department ${id}: ${error}`);
-      throw error;
-    }
+    // Using Prisma to find department by ID
+    const department = await this.prisma.department.findUnique({
+      where: { id: numericId },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        parentId: true,
+      },
+    });
+
+    return department;
   }
 
   /**
    * Create a new department
    */
-  async create(name: string, description: string, parentId: number | null) {
-    try {
-      // Using Prisma to create a new department
-      const department = await this.prisma.department.create({
-        data: {
-          name,
-          description,
-          parentId,
-        },
-        select: {
-          id: true,
-        },
-      });
+  async create(name: string, description: string, parentId: string | null) {
+    const numericParentId = parentId ? parseInt(parentId, 10) : null;
 
-      return department.id;
-    } catch (error) {
-      this.logger.error(`Failed to create department: ${error}`);
-      throw error;
-    }
+    // Using Prisma to create a new department
+    const department = await this.prisma.department.create({
+      data: {
+        name,
+        description,
+        parentId: numericParentId,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    return department.id;
   }
 
   /**
    * Update an existing department
    */
   async update(
-    id: number,
+    id: string,
     name: string,
     description: string,
-    parentId: number | null,
+    parentId: string | null,
   ): Promise<boolean> {
-    try {
-      // Using Prisma to update department
-      await this.prisma.department.update({
-        where: { id },
-        data: {
-          name,
-          description,
-          parentId,
-        },
-      });
+    // Convert string ID to number for Prisma
+    const numericId = parseInt(id, 10);
 
-      return true;
-    } catch (error) {
-      this.logger.error(`Failed to update department ${id}: ${error}`);
-      throw error;
-    }
+    // Convert parentId from string to number if it's not null
+    const numericParentId = parentId ? parseInt(parentId, 10) : null;
+
+    // Using Prisma to update department
+    await this.prisma.department.update({
+      where: { id: numericId },
+      data: {
+        name,
+        description,
+        parentId: numericParentId,
+      },
+    });
+
+    return true;
   }
 
   /**
    * Delete a department
    */
-  async delete(id: number): Promise<boolean> {
-    try {
-      // Using Prisma to delete department
-      await this.prisma.department.delete({
-        where: { id },
-      });
+  async delete(id: string): Promise<boolean> {
+    // Convert string ID to number for Prisma
+    const numericId = parseInt(id, 10);
 
-      return true;
-    } catch (error) {
-      this.logger.error(`Failed to delete department ${id}: ${error}`);
-      throw error;
-    }
+    // Using Prisma to delete department
+    await this.prisma.department.delete({
+      where: { id: numericId },
+    });
+
+    return true;
   }
 }

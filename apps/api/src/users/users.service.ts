@@ -12,8 +12,6 @@ export interface ProfileUpdateData {
 @Injectable()
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
-  private data: Buffer | null = null;
-  private contentType: string | null = null;
 
   constructor(private readonly prisma: PrismaService) {}
 

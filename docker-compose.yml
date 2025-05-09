@@ -1,4 +1,4 @@
-version: '3.9'
+version: "3.9"
 services:
   app:
     build: .
@@ -7,8 +7,8 @@ services:
       - .:/app
       - /app/node_modules
     ports:
-      - '3001:3001' # Adjust if your web/api runs on other ports
-      - '5173:5173' # Vite default
+      - "3001:3001" # Adjust if your web/api runs on other ports
+      - "5173:5173" # Vite default
     environment:
       - NODE_ENV=development
       - DATABASE_URL=postgres://cmdb:cmdb@db:5432/cmdb
@@ -23,7 +23,7 @@ services:
       POSTGRES_PASSWORD: cmdb
       POSTGRES_DB: cmdb
     ports:
-      - '5432:5432'
+      - "5434:5432"
     volumes:
       - ./docker/pgdata:/var/lib/postgresql/data
 volumes:
