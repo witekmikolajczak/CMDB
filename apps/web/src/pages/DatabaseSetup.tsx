@@ -4,7 +4,6 @@ import {
   testDatabaseConnection,
   executeDatabaseSchema,
   createAdminUser,
-  clearDatabaseAndRecreateSchema,
   type DatabaseConnectionConfig,
   type AdminUserConfig
 } from '../api/apiClient';
@@ -53,17 +52,17 @@ const Dialog = ({
 };
 
 interface DatabaseSetupProps {
-  onSetupComplete?: () => void;
-}
-
-const DatabaseSetup: React.FC<DatabaseSetupProps> = ({ onSetupComplete }) => {
+    onSetupComplete?: () => void;
+  }
+  
+  const DatabaseSetup: React.FC<DatabaseSetupProps> = ({ onSetupComplete }) => {
   // Form state
   const [formData, setFormData] = useState({
-    hostname: 'db',
+    hostname: 'localhost',
     port: '5432',
-    database: 'cmdb',
-    username: 'cmdb',
-    password: 'cmdb',
+    database: '',
+    username: 'postgres',
+    password: '',
     adminUsername: '',
     adminPassword: '',
     adminEmail: '',
@@ -227,6 +226,12 @@ const DatabaseSetup: React.FC<DatabaseSetupProps> = ({ onSetupComplete }) => {
     }
   };
 
+
+
+
+
+
+  
   // Show schema creation confirmation dialog
   const showSchemaConfirmDialog = () => {
     setDialog({
@@ -240,70 +245,6 @@ const DatabaseSetup: React.FC<DatabaseSetupProps> = ({ onSetupComplete }) => {
       },
       confirmText: 'Create Schema'
     });
-  };
-
-  // Show confirmation dialog for clearing database and recreating schema
-  const showClearDbConfirmDialog = () => {
-    setDialog({
-      isOpen: true,
-      title: 'WARNING: Clear Database',
-      message: 'This will DELETE ALL DATA in your database and recreate the schema from scratch. This action cannot be undone. Are you absolutely sure you want to continue?',
-      isSuccess: false,
-      onConfirm: () => {
-        setDialog(prev => ({ ...prev, isOpen: false }));
-        handleClearDatabase();
-      },
-      confirmText: 'Yes, Clear Everything'
-    });
-  };
-
-  // Handle clear database and recreate schema
-  const handleClearAndRecreateSchema = () => {
-    showClearDbConfirmDialog();
-  };
-
-  // Clear database and recreate schema
-  const handleClearDatabase = async () => {
-    setIsProcessing(true);
-    
-    try {
-      const connectionConfig: DatabaseConnectionConfig = {
-        hostname: formData.hostname,
-        port: parseInt(formData.port),
-        database: formData.database,
-        username: formData.username,
-        password: formData.password
-      };
-      
-      const result = await clearDatabaseAndRecreateSchema(connectionConfig);
-      
-      setDialog({
-        isOpen: true,
-        title: result.success ? 'Database Cleared' : 'Operation Failed',
-        message: result.message,
-        isSuccess: result.success,
-        onConfirm: result.success ? 
-          (() => {
-            setDialog(prev => ({ ...prev, isOpen: false }));
-            setIsSchemaCreated(true);
-            setCurrentStep(2);
-          }) : 
-          null,
-        confirmText: result.success ? 'Continue to Admin Setup' : 'OK'
-      });
-      
-    } catch (error) {
-      setDialog({
-        isOpen: true,
-        title: 'Error',
-        message: `An unexpected error occurred: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        isSuccess: false,
-        onConfirm: null,
-        confirmText: 'OK'
-      });
-    } finally {
-      setIsProcessing(false);
-    }
   };
 
   // Create database schema
@@ -575,30 +516,12 @@ const DatabaseSetup: React.FC<DatabaseSetupProps> = ({ onSetupComplete }) => {
                   <span className="status-icon">✓</span> Database schema created successfully
                 </div>
               )}
-              
-              {isDbConnected && (
-                <div className="clear-db-section">
-                  <div className="divider"></div>
-                  <h3>Database Management</h3>
-                  <div className="warning-box danger">
-                    <strong>Warning:</strong> The following action will delete ALL data in your database!
-                  </div>
-                  <button 
-                    type="button" 
-                    className="danger-btn" 
-                    onClick={handleClearAndRecreateSchema}
-                    disabled={isProcessing}
-                  >
-                    {isProcessing ? 'Processing...' : 'Clear Database & Recreate Schema'}
-                  </button>
-                </div>
-              )}
             </form>
           ) : (
             <form onSubmit={handleSubmit} className="setup-form">
               <h2>Create Admin User</h2>
               <p className="form-description">
-                Create an administrator account to manage your CMDB. This will be your main account with full access to the system.
+                Create your administrator account. This account will have full access to the InvenTrack system.
               </p>
 
               <div className="form-group">
@@ -611,7 +534,6 @@ const DatabaseSetup: React.FC<DatabaseSetupProps> = ({ onSetupComplete }) => {
                   onChange={handleChange}
                   placeholder="Enter admin username"
                   className={errors.adminUsername ? 'error' : ''}
-                  disabled={isProcessing}
                 />
                 {errors.adminUsername && <div className="error-message">{errors.adminUsername}</div>}
               </div>
@@ -626,7 +548,6 @@ const DatabaseSetup: React.FC<DatabaseSetupProps> = ({ onSetupComplete }) => {
                   onChange={handleChange}
                   placeholder="Enter admin email"
                   className={errors.adminEmail ? 'error' : ''}
-                  disabled={isProcessing}
                 />
                 {errors.adminEmail && <div className="error-message">{errors.adminEmail}</div>}
               </div>
@@ -639,9 +560,8 @@ const DatabaseSetup: React.FC<DatabaseSetupProps> = ({ onSetupComplete }) => {
                   name="adminPassword"
                   value={formData.adminPassword}
                   onChange={handleChange}
-                  placeholder="Enter password (min. 8 characters)"
+                  placeholder="Minimum 8 characters"
                   className={errors.adminPassword ? 'error' : ''}
-                  disabled={isProcessing}
                 />
                 {errors.adminPassword && <div className="error-message">{errors.adminPassword}</div>}
               </div>
@@ -654,11 +574,14 @@ const DatabaseSetup: React.FC<DatabaseSetupProps> = ({ onSetupComplete }) => {
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  placeholder="Confirm your password"
+                  placeholder="Re-enter password"
                   className={errors.confirmPassword ? 'error' : ''}
-                  disabled={isProcessing}
                 />
                 {errors.confirmPassword && <div className="error-message">{errors.confirmPassword}</div>}
+              </div>
+
+              <div className="form-note">
+                This account will have full administrative privileges. Keep these credentials secure.
               </div>
 
               <div className="form-actions">

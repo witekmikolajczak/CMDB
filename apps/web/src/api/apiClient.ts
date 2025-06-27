@@ -161,39 +161,6 @@ export const createAdminUser = async (
 };
 
 /**
- * Clear all database objects and recreate the schema
- * Warning: This will delete all data in the database
- */
-export const clearDatabaseAndRecreateSchema = async (config: DatabaseConnectionConfig): Promise<{
-  success: boolean;
-  message: string;
-}> => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/database/clear-and-recreate-schema`, {
-      method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify(config),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      return {
-        success: false,
-        message: errorData.message || 'Database clearing failed',
-      };
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('API request failed:', error);
-    return {
-      success: false,
-      message: `Request failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-    };
-  }
-};
-
-/**
  * Get the list of assets
  */
 export const getAssets = async (): Promise<any> => {

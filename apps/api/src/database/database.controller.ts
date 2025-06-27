@@ -80,38 +80,4 @@ export class DatabaseController {
     
     return result;
   }
-
-  @Public()
-  @Post('clear-and-recreate-schema')
-  async clearAndRecreateSchema(@Body() config: DatabaseConnectionConfig) {
-    // Get the current database configuration if needed
-    if (!config && this.databaseConfigService.isDatabaseConfigured()) {
-      const savedConfig = this.databaseConfigService.getConfig();
-      if (savedConfig) {
-        config = {
-          hostname: savedConfig.hostname,
-          port: savedConfig.port,
-          database: savedConfig.database,
-          username: savedConfig.username,
-          password: savedConfig.password
-        };
-      }
-    }
-    
-    // Ensure we have config
-    if (!config) {
-      throw new HttpException(
-        'Database configuration not provided and no saved configuration found.', 
-        HttpStatus.BAD_REQUEST
-      );
-    }
-    
-    const result = await this.databaseService.clearDatabaseAndRecreateSchema(config);
-    
-    if (!result.success) {
-      throw new HttpException(result.message, HttpStatus.BAD_REQUEST);
-    }
-    
-    return result;
-  }
 }
