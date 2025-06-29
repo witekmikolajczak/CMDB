@@ -6,7 +6,9 @@
   flex-direction: column;
   width: 100%;
   padding: 2rem;
-  background-color: var(--background);
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .page-header {
@@ -17,7 +19,7 @@
 }
 
 .page-header h1 {
-  color: var(--foreground);
+  color: var(--text-color);
   font-size: 1.75rem;
   margin: 0;
 }
@@ -40,16 +42,19 @@
 }
 
 .filter-section label {
-  color: var(--muted-foreground);
+  color: var(--text-color);
   font-size: 0.875rem;
 }
 
 .filter-select,
 .search-input {
   padding: 0.5rem;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-color);
   border-radius: 0.375rem;
   font-size: 0.875rem;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  transition: border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease;
 }
 
 .search-input {
@@ -63,16 +68,17 @@
 }
 
 .report-card {
-  background-color: var(--card);
-  border: 1px solid var(--border);
+  background-color: var(--card-bg-color);
+  border: 1px solid var(--border-color);
   border-radius: 0.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 4px var(--shadow-color);
+  color: var(--text-color);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease, color 0.3s ease;
 }
 
 .report-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px var(--shadow-color);
 }
 
 .report-card-header {
@@ -80,13 +86,16 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--card-bg-color);
+  transition: background-color 0.3s ease;
 }
 
 .report-card-header h3 {
   margin: 0;
-  color: var(--foreground);
+  color: var(--text-color);
   font-size: 1.125rem;
+  font-weight: 600;
 }
 
 .status-badge {
@@ -98,30 +107,33 @@
 }
 
 .status-badge.status-completed {
-  background-color: rgba(6, 214, 160, 0.1);
-  color: var(--success);
+  background-color: rgba(6, 214, 160, 0.2);
+  color: #06d6a0;
 }
 
 .status-badge.status-scheduled {
-  background-color: rgba(255, 209, 102, 0.1);
-  color: var(--warning);
+  background-color: rgba(255, 209, 102, 0.2);
+  color: #ffd166;
 }
 
 .status-badge.status-in_progress {
-  background-color: rgba(79, 209, 197, 0.1);
-  color: var(--primary);
+  background-color: rgba(79, 209, 197, 0.2);
+  color: #4fd1c5;
 }
 
 .report-card-body {
   padding: 1rem;
+  background-color: var(--card-bg-color);
+  transition: background-color 0.3s ease;
 }
 
 .report-description {
-  color: var(--muted-foreground);
+  color: var(--text-color);
   margin-bottom: 1rem;
   font-size: 0.875rem;
   line-height: 1.4;
   min-height: 3rem;
+  opacity: 0.85;
 }
 
 .report-details {
@@ -136,21 +148,25 @@
 }
 
 .detail-label {
-  color: var(--muted-foreground);
+  color: var(--text-color);
   font-size: 0.75rem;
   margin-bottom: 0.25rem;
+  opacity: 0.7;
 }
 
 .detail-value {
   font-size: 0.875rem;
-  color: var(--foreground);
+  color: var(--text-color);
+  font-weight: 500;
 }
 
 .report-card-actions {
   display: flex;
   justify-content: space-between;
   padding: 1rem;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--border-color);
+  background-color: var(--card-bg-color);
+  transition: background-color 0.3s ease;
 }
 
 .action-btn,

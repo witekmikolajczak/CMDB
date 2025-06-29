@@ -195,4 +195,47 @@ export class AuthService {
       throw new UnauthorizedException('Invalid token');
     }
   }
+
+  /**
+   * Get user by ID from the database
+   */
+  async getUserById(userId: string) {
+    // Get the database client
+    if (!this.databaseService.getPool()) {
+      throw new UnauthorizedException('Database not configured');
+    }
+    
+    let client: PoolClient | null = null;
+    
+    try {
+      client = await this.databaseService.getPool()!.connect();
+      
+      // Find the user
+      const result = await client?.query(
+        'SELECT u.id, u.username, u.email, u.first_name, u.last_name, r.name as role, s.name as status FROM cmdb.users u LEFT JOIN cmdb.roles r ON u.role_id = r.id LEFT JOIN cmdb.user_statuses s ON u.status_id = s.id WHERE u.id = $1',
+        [userId]
+      );
+      
+      const user = result?.rows[0];
+      
+      if (!user) {
+        return null;
+      }
+      
+      return {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        role: user.role,
+        status: user.status
+      };
+    } catch (error) {
+      this.logger.error(`Failed to get user by ID: ${error.message}`);
+      throw error;
+    } finally {
+      if (client) client.release();
+    }
+  }
 }

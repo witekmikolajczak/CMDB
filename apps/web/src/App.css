@@ -1,3 +1,6 @@
+/* Import Google Fonts (Barlow) */
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700&display=swap');
+
 /* Reset default styles */
 * {
   box-sizing: border-box;
@@ -5,15 +8,32 @@
   padding: 0;
 }
 
+/* Ensure the app supports dark mode at the root level */
+:root, html, body {
+  transition: all 0.3s ease;
+  color: var(--text-color);
+  background-color: var(--bg-color);
+}
+
 .app {
   width: 100%;
   min-height: 100vh;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
 }
 
-/* Import Google Fonts (Barlow) */
-@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700&display=swap');
+.app-header {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px 20px;
+  background-color: var(--header-bg, #ffffff);
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-color);
+  z-index: 100;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
 
 
 /* Loading spinner */
@@ -24,23 +44,34 @@
   justify-content: center;
   min-height: 100vh;
   min-width: 100vw;
-  background-color: var(--background);
+  background-color: var(--bg-color, #f5f5f5);
+  color: var(--text-color, #121212);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* Default light mode spinner */
 .loading-spinner {
   width: 50px;
   height: 50px;
-  border: 5px solid var(--muted);
-  border-top: 5px solid var(--primary);
+  border: 5px solid rgba(0, 0, 0, 0.1);
+  border-top: 5px solid var(--primary-color, #0066cc);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 1rem;
+  background-color: transparent;
+}
+
+/* Dark mode spinner */
+html[data-theme="dark"] .loading-spinner,
+body.dark-theme .loading-spinner {
+  border: 5px solid rgba(255, 255, 255, 0.1);
+  border-top: 5px solid var(--primary-color, #4d94ff);
 }
 
 .loading-container p {
-  color: var(--muted-foreground);
+  color: var(--text-color);
   font-size: 1rem;
-  font-family: var(--font-family);
+  font-family: 'Barlow', sans-serif;
 }
 
 @keyframes spin {

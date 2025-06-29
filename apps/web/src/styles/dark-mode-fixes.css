@@ -1,0 +1,277 @@
+/* Dark Mode Fixes for User Management and Settings */
+
+/* Fix for modal content in dark mode */
+.modal-content {
+  background-color: var(--card-bg-color) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-color) !important;
+}
+
+/* Fix modal header text */
+.modal-header h2,
+.modal-body h3,
+.modal-content h3,
+.modal-content h4 {
+  color: var(--text-color) !important;
+}
+
+/* Fix form inputs and selects */
+.form-group input,
+.form-group select,
+.form-group textarea {
+  background-color: var(--input-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-color) !important;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 0 1px var(--primary-color) !important;
+}
+
+/* Fix for user details and other text */
+.user-details,
+.user-info,
+.profile-info,
+.user-role,
+.user-status,
+.user-email,
+.profile-container,
+.profile-header h2,
+.profile-header p,
+.form-group label,
+.modal-header h3,
+.modal-body p {
+  color: var(--text-color) !important;
+}
+
+/* Fix button text colors */
+.btn-primary, 
+.btn-secondary, 
+.btn-success, 
+.btn-danger {
+  color: var(--button-text) !important;
+}
+
+/* Fix for table elements */
+.users-table tr,
+.users-table th,
+.users-table td {
+  background-color: var(--card-bg-color) !important;
+  color: var(--text-color) !important;
+  border-color: var(--border-color) !important;
+}
+
+.users-table th {
+  background-color: var(--table-header-bg) !important;
+}
+
+.users-table tr:hover {
+  background-color: var(--table-row-hover) !important;
+}
+
+/* Fix close button */
+.close-btn {
+  color: var(--text-color) !important;
+}
+
+/* Fix any remaining elements with old variable names */
+[data-theme="dark"] [style*="--card"],
+.dark-theme [style*="--card"] {
+  --card: var(--card-bg-color) !important;
+}
+
+[data-theme="dark"] [style*="--border"],
+.dark-theme [style*="--border"] {
+  --border: var(--border-color) !important;
+}
+
+[data-theme="dark"] [style*="--foreground"],
+.dark-theme [style*="--foreground"] {
+  --foreground: var(--text-color) !important;
+}
+
+/* Fix profile picture container */
+.profile-picture-container,
+.user-avatar,
+.profile-picture,
+.profile-picture-section .user-avatar {
+  overflow: hidden !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Light mode: dark grey background with white text */
+html[data-theme="light"] .profile-picture-container,
+html[data-theme="light"] .user-avatar,
+html[data-theme="light"] .profile-picture,
+html[data-theme="light"] .profile-picture-section .user-avatar,
+body:not(.dark-theme) .profile-picture-container,
+body:not(.dark-theme) .user-avatar,
+body:not(.dark-theme) .profile-picture,
+body:not(.dark-theme) .profile-picture-section .user-avatar {
+  background-color: #4C566A !important;
+  border: 2px solid rgba(0, 0, 0, 0.1) !important;
+  color: #FFFFFF !important;
+}
+
+/* Dark mode: light circle with dark text */
+html[data-theme="dark"] .profile-picture-container,
+html[data-theme="dark"] .user-avatar:not(.users-page *):not(.users-table *):not(.user-details *):not(.modal-content *),
+html[data-theme="dark"] .profile-picture,
+html[data-theme="dark"] .profile-picture-section .user-avatar,
+body.dark-theme .profile-picture-container,
+body.dark-theme .user-avatar:not(.users-page *):not(.users-table *):not(.user-details *):not(.modal-content *),
+body.dark-theme .profile-picture,
+body.dark-theme .profile-picture-section .user-avatar {
+  background-color: #D8DEE9 !important;
+  border: 2px solid rgba(255, 255, 255, 0.2) !important;
+  color: #2E3440 !important;
+}
+
+/* Fix user avatar images to ensure perfect circles */
+.user-avatar img,
+.profile-picture-container img,
+.user-profile-image,
+.profile-picture img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border-radius: 50% !important;
+}
+
+/* Default avatars with initials - text styling */
+.default-avatar,
+.user-profile-placeholder,
+.profile-picture-placeholder {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  font-size: 1rem !important;
+  text-align: center !important;
+  line-height: 1 !important;
+}
+
+/* Make sure everything is perfectly centered in all browsers */
+.default-avatar span,
+.user-profile-placeholder span,
+.profile-picture-placeholder span,
+.user-avatar span {
+  display: inline-block !important;
+  text-align: center !important;
+  width: 100% !important;
+}
+
+/* Light mode default avatar text color (for all except user management) */
+html[data-theme="light"] .default-avatar,
+html[data-theme="light"] .user-profile-placeholder,
+html[data-theme="light"] .profile-picture-placeholder,
+body:not(.dark-theme) .default-avatar,
+body:not(.dark-theme) .user-profile-placeholder,
+body:not(.dark-theme) .profile-picture-placeholder {
+  background-color: #4c566a !important;
+  color: #FFFFFF !important;
+}
+
+/* Dark mode default avatar text color (for all except user management) */
+html[data-theme="dark"] .default-avatar,
+html[data-theme="dark"] .user-profile-placeholder,
+html[data-theme="dark"] .profile-picture-placeholder,
+body.dark-theme .default-avatar,
+body.dark-theme .user-profile-placeholder,
+body.dark-theme .profile-picture-placeholder {
+  background-color: #4c566a !important;
+  color: #f5f5f5 !important;
+}
+
+/* User details sections */
+.user-details-section {
+  background-color: var(--card-bg-color) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-color) !important;
+}
+
+/* Specific fix for User Management page profile pictures */
+/* Force specific avatar styles for User Management page in ALL modes */
+.users-page .user-avatar,
+.users-page .user-avatar.large,
+.users-table .user-avatar,
+.users-table .default-avatar,
+.user-details .user-avatar,
+.modal-content .user-avatar {
+  background-color: #4C566A !important;
+  color: #FFFFFF !important;
+}
+
+/* Ensure avatar text is always white in User Management */
+.users-page .user-avatar span,
+.users-page .default-avatar,
+.users-table .user-avatar span,
+.users-table .default-avatar span,
+.user-details .user-avatar span,
+.modal-content .user-avatar span {
+  color: #FFFFFF !important;
+}
+
+/* Make sure User Management page avatars are always centered */
+.users-page .user-avatar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+/* Settings Page Fixes */
+
+/* Fix for settings cards */
+.setting-item {
+  background-color: var(--card-bg-color) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-color) !important;
+}
+
+/* Fix settings headings */
+.settings-main h2,
+.settings-main h3,
+.setting-item h3,
+.setting-item-title {
+  color: var(--text-color) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* Fix settings inputs */
+.setting-input,
+.settings-main input,
+.settings-main select,
+.settings-main textarea {
+  background-color: var(--input-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-color) !important;
+}
+
+/* Fix settings navigation */
+.settings-nav-item {
+  color: var(--text-color) !important;
+}
+
+.settings-nav-item:hover {
+  background-color: var(--hover-color) !important;
+}
+
+.settings-nav-item.active {
+  background-color: var(--primary-color) !important;
+  color: white !important;
+}
+
+/* Fix settings descriptions */
+.setting-description {
+  color: var(--muted) !important;
+}

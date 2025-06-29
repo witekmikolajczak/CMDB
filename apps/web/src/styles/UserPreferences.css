@@ -1,0 +1,77 @@
+.user-preferences-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.user-preferences-container h1 {
+  margin-bottom: 30px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.preferences-section {
+  margin-bottom: 30px;
+}
+
+.preferences-section h2 {
+  margin-bottom: 20px;
+  color: var(--primary-color);
+}
+
+.preference-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  margin-bottom: 15px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--card-bg);
+  box-shadow: 0 2px 4px var(--shadow-color);
+}
+
+.preference-info {
+  flex: 1;
+}
+
+.preference-info h3 {
+  margin: 0 0 5px 0;
+}
+
+.preference-info p {
+  margin: 0;
+  color: var(--text-color);
+  opacity: 0.7;
+}
+
+.preference-control {
+  margin-left: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 120px;
+}
+
+.preferences-info {
+  padding: 10px;
+  margin-top: 20px;
+  background-color: var(--secondary-color);
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .preference-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .preference-control {
+    margin-left: 0;
+    margin-top: 15px;
+    width: 100%;
+    justify-content: flex-start;
+  }
+}

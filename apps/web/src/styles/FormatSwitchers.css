@@ -1,0 +1,42 @@
+.format-switcher {
+  display: flex;
+  flex-direction: column;
+}
+
+.format-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.format-option {
+  padding: 10px 15px;
+  border: 1px solid var(--border-color);
+  background-color: var(--card-bg-color);
+  color: var(--text-color);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  width: 100%;
+}
+
+.format-option:hover {
+  background-color: var(--hover-color);
+}
+
+.format-option.active {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+@media (min-width: 768px) {
+  .format-options {
+    flex-direction: row;
+  }
+  
+  .format-option {
+    width: auto;
+  }
+}

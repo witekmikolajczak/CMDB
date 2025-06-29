@@ -1,0 +1,153 @@
+.language-switcher {
+  display: flex;
+  align-items: center;
+  position: relative;
+  font-size: 14px;
+  width: 200px;
+}
+
+.language-display {
+  display: none;
+}
+
+/* Custom select wrapper for the enhanced display */
+.custom-select-wrapper {
+  position: relative;
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Visual representation of the current selection */
+.current-language {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  pointer-events: none; /* Allow clicks to pass through to the select */
+  padding-left: 16px;
+  gap: 10px;
+  font-weight: 500;
+  color: var(--text-color);
+  z-index: 1;
+}
+
+/* Subtle animation for hover state */
+.language-select:hover + .current-language .language-flag {
+  transform: scale(1.1);
+}
+
+/* Add a beautiful focus effect */
+.language-select:focus + .current-language {
+  color: var(--primary-color);
+}
+
+.language-flag {
+  font-size: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.language-name {
+  font-weight: 500;
+}
+
+/* Beautiful custom select styling */
+.language-select {
+  width: 100%;
+  padding: 12px 16px;
+  padding-right: 40px; /* Space for the custom arrow */
+  padding-left: 54px; /* Space for flag and text */
+  border-radius: 8px;
+  border: 2px solid var(--border-color);
+  background-color: var(--card-bg-color);
+  color: rgba(0,0,0,0); /* Hide the text completely */
+  text-indent: -9999px; /* Move text completely off-screen */
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Barlow', sans-serif;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  appearance: none; /* Remove default appearance */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234d94ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.language-select option {
+  padding: 12px;
+  font-weight: 500;
+  background-color: var(--card-bg-color);
+  color: var(--text-color);
+}
+
+.language-select:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+.language-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(77, 148, 255, 0.25);
+}
+
+/* Dark mode adjustments */
+html[data-theme="dark"] .language-select,
+.dark-theme .language-select {
+  background-color: #2c2c2c;
+  border-color: #444;
+  color: #eee;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234d94ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+}
+
+html[data-theme="dark"] .language-select:hover,
+.dark-theme .language-select:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+html[data-theme="dark"] .language-select:focus,
+.dark-theme .language-select:focus {
+  box-shadow: 0 0 0 3px rgba(77, 148, 255, 0.25);
+}
+
+html[data-theme="dark"] .language-select option,
+.dark-theme .language-select option {
+  background-color: #2c2c2c;
+  color: #eee;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .language-display {
+    background-color: #333;
+    color: #fff;
+    border-color: #555;
+  }
+  
+  .language-display:hover {
+    border-color: #777;
+    background-color: #444;
+  }
+  
+  .language-toggle {
+    background-color: #333;
+    color: #fff;
+    border-color: #555;
+  }
+  
+  .language-toggle:hover {
+    background-color: #444;
+    border-color: #777;
+  }
+}

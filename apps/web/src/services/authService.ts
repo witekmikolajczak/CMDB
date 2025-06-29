@@ -155,7 +155,7 @@ export const authService = {
   },
 
   /**
-   * Validate the stored token
+   * Validate the stored token and refresh user data
    */
   async validateToken(): Promise<boolean> {
     const token = this.getToken();
@@ -168,19 +168,36 @@ export const authService = {
       const response = await fetch(`${API_BASE_URL}/auth/validate`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${token}`
+          // Removed cache-control headers to avoid CORS issues
         },
       });
 
       if (!response.ok) {
-        this.logout(); // Clear invalid authentication data
+        console.warn('Token validation failed with status:', response.status);
         return false;
       }
 
       const data = await response.json();
-      return data.valid;
+      
+      if (data.valid && data.user) {
+        // Update stored user data with the freshest data from the server
+        localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+        return true;
+      }
+      
+      if (!data.valid) {
+        console.warn('Token validation returned invalid:', data.message);
+        // Only logout if the error is critical (not just user not found)
+        if (data.message && (data.message.includes('expired') || data.message.includes('invalid'))) {
+          this.logout();
+        }
+      }
+      
+      return data.valid || false;
     } catch (error) {
       console.error('Token validation error:', error);
+      // Don't automatically logout on network errors
       return false;
     }
   },
@@ -196,7 +213,7 @@ export const authService = {
   /**
    * Update user profile
    */
-  async updateProfile(profileData: ProfileUpdateData): Promise<User> {
+  async updateProfile(profileData: ProfileUpdateData): Promise<User | null> {
     const token = this.getToken();
     
     if (!token) {
@@ -204,18 +221,27 @@ export const authService = {
     }
     
     try {
-      const response = await fetch(`${API_BASE_URL}/users/profile`, {
+      // First validate the token
+      const isValid = await this.validateToken();
+      if (!isValid) {
+        throw new Error('Session expired');
+      }
+      
+      // Add timestamp parameter to prevent caching instead of using cache-control headers
+      const timestamp = new Date().getTime();
+      const response = await fetch(`${API_BASE_URL}/users/profile?_t=${timestamp}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${token}`
+          // Removed cache-control headers to avoid CORS issues
         },
         body: JSON.stringify(profileData),
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to update profile');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update profile');
       }
 
       const data = await response.json();

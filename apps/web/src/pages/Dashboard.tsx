@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import '../styles/Dashboard.css';
 import { useAuth } from '../contexts/AuthContext';
 import { 
@@ -19,6 +20,7 @@ import AssignmentsPage from './AssignmentsPage';
 import ReportsPage from './ReportsPage';
 import SettingsPage from './SettingsPage';
 import ProfilePage from './ProfilePage';
+import UserPreferences from './UserPreferences';
 
 // Navigation items type
 interface NavItem {
@@ -27,37 +29,38 @@ interface NavItem {
   icon: string;
   component: React.ComponentType;
   adminOnly?: boolean;
+  hideFromMenu?: boolean;
 }
 
-// Navigation configuration
-const NAV_ITEMS: NavItem[] = [
+// Navigation configuration with translation function
+const getNavItems = (t: any): NavItem[] => [
   {
     id: 'overview',
-    label: 'Dashboard',
+    label: t('dashboard.title'),
     icon: '📊',
     component: OverviewContent
   },
   {
     id: 'assets',
-    label: 'Assets',
+    label: t('assets.title'),
     icon: '💻',
     component: AssetsPage
   },
   {
     id: 'users',
-    label: 'Users',
+    label: t('users.title'),
     icon: '👥',
     component: UsersPage
   },
   {
     id: 'departments',
-    label: 'Departments',
+    label: t('departments.title'),
     icon: '🏢',
     component: DepartmentsPage
   },
   {
     id: 'assignments',
-    label: 'Assignments',
+    label: t('assignments.title'),
     icon: '📋',
     component: AssignmentsPage
   },
@@ -69,21 +72,30 @@ const NAV_ITEMS: NavItem[] = [
   },
   {
     id: 'settings',
-    label: 'Settings',
+    label: t('settings.title'),
     icon: '⚙️',
     component: SettingsPage,
     adminOnly: true
   },
   {
+    id: 'preferences',
+    label: t('userPreferences.title'),
+    icon: '🎨',
+    component: UserPreferences,
+    hideFromMenu: true
+  },
+  {
     id: 'profile',
     label: 'Profile',
     icon: '👤',
-    component: ProfilePage
+    component: ProfilePage,
+    hideFromMenu: true
   }
 ];
 
 // Overview Content Component
 function OverviewContent() {
+  const { t } = useTranslation();
   const [usersCount, setUsersCount] = useState<number | null>(null);
   const [usersCountWeek, setUsersCountWeek] = useState<number | null>(null);
   const [departmentsCount, setDepartmentsCount] = useState<number | null>(null);
@@ -134,35 +146,35 @@ function OverviewContent() {
   return (
     <div className="overview-content">
       <div className="dashboard-welcome">
-        <h2>Welcome to InvenTrack CMDB</h2>
-        <p>Your centralized asset management system</p>
+        <h2>{t('common.welcome')}</h2>
+        <p>{t('dashboard.subtitle')}</p>
       </div>
 
       <div className="dashboard-stats">
         <div className="stat-card">
-          <h3>Total Assets</h3>
+          <h3>{t('dashboard.totalAssets')}</h3>
           <p className="stat-value">{isLoading ? '...' : assetsCount}</p>
-          <p className="stat-detail">{isLoading ? '...' : `+${assetsCountMonth} this month`}</p>
+          <p className="stat-detail">{isLoading ? '...' : `+${assetsCountMonth} ${t('dashboard.thisMonth')}`}</p>
         </div>
         <div className="stat-card">
-          <h3>Active Assignments</h3>
+          <h3>{t('dashboard.totalAssignments')}</h3>
           <p className="stat-value">{isLoading ? '...' : assignmentsCount}</p>
-          <p className="stat-detail">{isLoading ? '...' : `+${assignmentsCountWeek} this week`}</p>
+          <p className="stat-detail">{isLoading ? '...' : `+${assignmentsCountWeek} ${t('dashboard.thisWeek')}`}</p>
         </div>
         <div className="stat-card">
-          <h3>Departments</h3>
+          <h3>{t('dashboard.totalDepartments')}</h3>
           <p className="stat-value">{isLoading ? '...' : departmentsCount}</p>
         </div>
         <div className="stat-card">
-          <h3>Users</h3>
+          <h3>{t('dashboard.totalUsers')}</h3>
           <p className="stat-value">{isLoading ? '...' : usersCount}</p>
-          <p className="stat-detail">{isLoading ? '...' : `+${usersCountWeek} this week`}</p>
+          <p className="stat-detail">{isLoading ? '...' : `+${usersCountWeek} ${t('dashboard.thisWeek')}`}</p>
         </div>
       </div>
 
       <div className="dashboard-quick-actions">
         <div className="quick-action-card">
-          <h3>Recent Assignments</h3>
+          <h3>{t('dashboard.recentActivity')}</h3>
           <ul>
             <li>
               <span>MacBook Pro</span>
@@ -237,18 +249,27 @@ function OverviewContent() {
 
 const Dashboard: React.FC = () => {
   const { user, logout, getProfilePictureUrl } = useAuth();
+  const { t } = useTranslation();
   const [activeNavItem, setActiveNavItem] = useState('overview');
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
 
-  // Filter navigation items based on user role
-  const filteredNavItems = NAV_ITEMS.filter(
-    item => !item.adminOnly || user?.role === 'admin'
+  // Get navigation items with translations
+  const navItems = getNavItems(t);
+
+  // Filter navigation items based on user role and hide status
+  const filteredNavItems = navItems.filter(
+    (item: NavItem) => (
+      // Show admin items only to admins
+      (!item.adminOnly || user?.role === 'admin') && 
+      // Hide items marked with hideFromMenu
+      !item.hideFromMenu
+    )
   );
 
   // Get the active component
-  const ActiveComponent = NAV_ITEMS.find(
-    item => item.id === activeNavItem
+  const ActiveComponent = navItems.find(
+    (item: NavItem) => item.id === activeNavItem
   )?.component || OverviewContent;
 
   // Fetch profile image
@@ -309,17 +330,42 @@ const Dashboard: React.FC = () => {
             className="user-info-container" 
             onClick={() => setShowUserMenu(!showUserMenu)}
           >
-            <div className="user-avatar">
+            <div className="user-avatar" style={{ 
+                position: 'relative',
+                width: '40px',
+                height: '40px',
+                marginRight: '0.5rem',
+                borderRadius: '20px',
+                backgroundColor: '#4c566a',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden',
+                boxShadow: '0 0 0 2px #a6abb5'
+              }}>
               {profileImageUrl ? (
                 <img 
                   src={profileImageUrl} 
                   alt="Profile" 
-                  className="user-profile-image" 
+                  style={{
+                    width: '40px',
+                    height: '40px',
+                    objectFit: 'cover',
+                    borderRadius: '20px'
+                  }}
                 />
               ) : (
-                <div className="user-profile-placeholder">
+                <div className="default-avatar" style={{
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '1rem',
+                  fontWeight: 500
+                }}>
                   {user?.firstName && user?.lastName 
-                    ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}` 
+                    ? `${user.firstName.charAt(0).toUpperCase()}${user.lastName.charAt(0).toUpperCase()}` 
                     : 'U'}
                 </div>
               )}
@@ -339,16 +385,26 @@ const Dashboard: React.FC = () => {
                   setShowUserMenu(false);
                 }}
               >
-                <span className="dropdown-icon">👤</span>
+                <div className="dropdown-icon">👤</div>
                 <span>Profile</span>
+              </div>
+              <div 
+                className="dropdown-item"
+                onClick={() => {
+                  setActiveNavItem('preferences');
+                  setShowUserMenu(false);
+                }}
+              >
+                <div className="dropdown-icon">⚙️</div>
+                <span>{t('userPreferences.title')}</span>
               </div>
               <div className="dropdown-divider"></div>
               <div 
                 className="dropdown-item logout-item"
                 onClick={logout}
               >
-                <span className="dropdown-icon">🚪</span>
-                <span>Logout</span>
+                <div className="dropdown-icon">🚪</div>
+                <span>{t('auth.logout')}</span>
               </div>
             </div>
           )}

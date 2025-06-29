@@ -23,9 +23,33 @@ export class AppService {
     return 'Hello World!';
   }
 
-  getDatabaseStatus(): { isConfigured: boolean } {
-    return { 
-      isConfigured: this.databaseConfigService.isDatabaseConfigured() 
-    };
+  async getDatabaseStatus(): Promise<{ isConfigured: boolean; isConnected: boolean; error?: string }> {
+    const isConfigured = this.databaseConfigService.isDatabaseConfigured();
+    
+    // If not configured, no need to check connection
+    if (!isConfigured) {
+      return { isConfigured: false, isConnected: false };
+    }
+    
+    try {
+      // Test the database connection
+      const config = this.databaseConfigService.getConfig();
+      if (!config) {
+        return { isConfigured: true, isConnected: false, error: 'Database configuration is invalid' };
+      }
+      
+      const connectionResult = await this.databaseService.testConnection(config);
+      return { 
+        isConfigured: true, 
+        isConnected: connectionResult.success,
+        error: connectionResult.success ? undefined : connectionResult.message
+      };
+    } catch (error) {
+      return { 
+        isConfigured: true, 
+        isConnected: false,
+        error: error.message || 'Unknown database connection error'
+      };
+    }
   }
 }

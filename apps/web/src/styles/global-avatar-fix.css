@@ -1,0 +1,51 @@
+/* Global avatar fix to ensure consistent styling across the entire application */
+
+/* Target all user avatars to ensure consistent styling */
+.user-avatar,
+[class*="avatar"],
+.default-avatar,
+.profile-picture-container,
+.avatar-image {
+  /* Force background color to be exactly #4c566a */
+  background-color: #4c566a !important;
+  
+  /* Use exact pixel border-radius for perfect circles */
+  border-radius: 20px !important;
+  
+  /* Remove all borders to prevent double outlines */
+  border: none !important;
+  
+  /* Apply the correct outline with box-shadow */
+  box-shadow: 0 0 0 2px #a6abb5 !important;
+  -webkit-box-shadow: 0 0 0 2px #a6abb5 !important;
+  -moz-box-shadow: 0 0 0 2px #a6abb5 !important;
+  
+  /* Prevent any other styling from interfering */
+  outline: none !important;
+}
+
+/* Ensure images maintain the circular shape */
+.avatar-image,
+img.avatar-image,
+.user-avatar img,
+.profile-picture-container img {
+  border-radius: 20px !important;
+  overflow: hidden !important;
+}
+
+/* Make sure the default avatar text is properly centered and sized */
+.default-avatar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: white !important;
+  font-weight: 500 !important;
+}
+
+/* Different sizes for different contexts */
+.user-avatar.large,
+.default-avatar.large {
+  width: 80px !important;
+  height: 80px !important;
+  border-radius: 40px !important;
+}

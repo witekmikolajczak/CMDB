@@ -1,21 +1,48 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import Welcome from './pages/Welcome'
 import DatabaseSetup from './pages/DatabaseSetup'
 import Dashboard from './pages/Dashboard'
+import DatabaseErrorPage from './pages/DatabaseErrorPage'
 import { checkDatabaseStatus } from './api/apiClient'
 import { databaseConfigService } from './services/databaseConfigService'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { LanguageProvider } from './contexts/LanguageContext'
+import { ThemeProvider } from './contexts/ThemeContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import './App.css'
+import './styles/app-settings.css'
+import './styles/dark-mode-fixes.css'
+import './styles/avatar-fixes.css'
+import './styles/user-avatar-fix.css'
+import './styles/profile-picture-fix.css'
+import './styles/table-avatar-fix.css'
+import './styles/header-avatar-fix.css'
+import './styles/profile-page-avatar-fix.css'
+import './styles/avatar-complete-fix.css'
+import './styles/simple-avatar-fix.css'
+import './styles/final-avatar-fix.css' /* Final minimal fix */
+import './styles/avatar-centering-fix.css' /* Comprehensive centering fix */
+import './styles/avatar-exact-fix.css' /* Exact match to User Management page */
+import './styles/avatar-override-fix.css';
+import './styles/profile-border-fix.css'; /* Critical override with highest specificity */
+import './styles/final-avatar-fix-force.css'; /* Absolute force fix for double outline issue */
+import './styles/global-avatar-fix.css'; /* Global fix for consistent avatar styling */
+import './styles/DatabaseErrorPage.css'; /* Styles for the database error page */
 
 const API_BASE_URL = 'http://localhost:3001'; // Replace with your API base URL
 
 function AppContent() {
   // Get auth context with the new updateUser method
-  const { isAuthenticated, updateUser } = useAuth();
+  const { updateUser } = useAuth();
   
-  // State to track database configuration status
+  // Initialize translation hook
+  const { t } = useTranslation();
+  
+  // State to track database configuration and connection status
   const [isDatabaseConfigured, setIsDatabaseConfigured] = useState<boolean | null>(null);
+  const [isDatabaseConnected, setIsDatabaseConnected] = useState<boolean | null>(null);
+  const [databaseError, setDatabaseError] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const [apiReady, setApiReady] = useState(false);
   
@@ -60,15 +87,20 @@ function AppContent() {
         }
         
         // Then verify with the API
-        const { isConfigured } = await checkDatabaseStatus();
+        const { isConfigured, isConnected, error } = await checkDatabaseStatus();
         
         setIsDatabaseConfigured(isConfigured);
+        setIsDatabaseConnected(isConnected);
+        setDatabaseError(error);
         
-        // If database is configured, go to dashboard
-        if (isConfigured) {
+        // If database is configured and connected successfully, go to dashboard
+        if (isConfigured && isConnected) {
           setCurrentPage('dashboard');
           // Trigger user state update to ensure current authentication state
           updateUser();
+        } else if (isConfigured && !isConnected) {
+          // Database is configured but connection failed - show error page
+          setCurrentPage('db-error');
         } else if (isLocallyConfigured) {
           // If locally configured but API says not configured, clear local config
           databaseConfigService.clearConfig();
@@ -94,6 +126,26 @@ function AppContent() {
     setCurrentPage(page);
   };
 
+  // Function to retry database connection
+  const handleRetryConnection = async () => {
+    setIsLoading(true);
+    try {
+      const { isConfigured, isConnected, error } = await checkDatabaseStatus();
+      setIsDatabaseConfigured(isConfigured);
+      setIsDatabaseConnected(isConnected);
+      setDatabaseError(error);
+      
+      if (isConfigured && isConnected) {
+        setCurrentPage('dashboard');
+        updateUser();
+      }
+    } catch (error) {
+      console.error('Error checking database connection:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // When database setup is complete
   const handleSetupComplete = () => {
     setIsDatabaseConfigured(true);
@@ -105,7 +157,7 @@ function AppContent() {
     return (
       <div className="loading-container">
         <div className="loading-spinner"></div>
-        <p>Loading application...</p>
+        <p>{t('common.loading')}</p>
       </div>
     );
   }
@@ -115,25 +167,37 @@ function AppContent() {
     return (
       <div className="loading-container">
         <div className="loading-spinner"></div>
-        <p>Waiting for API server to start...</p>
+        <p>{t('common.waitingForApi')}</p>
       </div>
     );
   }
 
   return (
-    <div className="app">
-      {!isDatabaseConfigured && currentPage === 'welcome' && 
-        <Welcome onGetStarted={() => navigateTo('database-setup')} />}
-      
-      {!isDatabaseConfigured && currentPage === 'database-setup' && 
-        <DatabaseSetup onSetupComplete={handleSetupComplete} />}
-      
-      {(isDatabaseConfigured || isAuthenticated) && (
-        <ProtectedRoute>
-          <Dashboard />
-        </ProtectedRoute>
-      )}
-    </div>
+    <LanguageProvider>
+      <ThemeProvider>
+        <div className="app">
+          
+          {!isDatabaseConfigured && currentPage === 'welcome' && 
+            <Welcome onGetStarted={() => navigateTo('database-setup')} />}
+          
+          {!isDatabaseConfigured && currentPage === 'database-setup' && 
+            <DatabaseSetup onSetupComplete={handleSetupComplete} />}
+          
+          {currentPage === 'db-error' && (
+            <DatabaseErrorPage 
+              error={databaseError} 
+              onReload={handleRetryConnection}
+            />
+          )}
+          
+          {(isDatabaseConfigured && isDatabaseConnected && currentPage !== 'db-error') && (
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          )}
+        </div>
+      </ThemeProvider>
+    </LanguageProvider>
   )
 }
 

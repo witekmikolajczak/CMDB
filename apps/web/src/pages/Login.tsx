@@ -1,5 +1,6 @@
 // apps/web/src/pages/Login.tsx
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import '../styles/Login.css';
 import { authService } from '../services/authService';
 import { useAuth } from '../contexts/AuthContext';
@@ -13,6 +14,7 @@ const Login: React.FC<LoginProps> = ({
   onLoginSuccess, 
   onRegisterClick 
 }) => {
+  const { t } = useTranslation();
   // Form state
   const [credentials, setCredentials] = useState({
     username: '',
@@ -46,12 +48,12 @@ const Login: React.FC<LoginProps> = ({
     
     // Validate form
     if (!credentials.username.trim()) {
-      setError('Username is required');
+      setError(t('auth.usernameRequired', 'Username is required'));
       return;
     }
     
     if (!credentials.password.trim()) {
-      setError('Password is required');
+      setError(t('auth.passwordRequired', 'Password is required'));
       return;
     }
     
@@ -63,7 +65,7 @@ const Login: React.FC<LoginProps> = ({
       updateUser();
       onLoginSuccess();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed. Please try again.');
+      setError(err instanceof Error ? err.message : t('auth.loginFailed', 'Login failed. Please try again.'));
     } finally {
       setIsLoading(false);
     }
@@ -74,14 +76,14 @@ const Login: React.FC<LoginProps> = ({
       <header className="login-header">
         <div className="logo-container">
           <img src="./logo-small.svg" alt="logo" width="60px" />
-          <h1 className="app-title">InvenTrack</h1>
+          <h1 className="app-title">{t('welcome.appTitle', 'InvenTrack')}</h1>
         </div>
       </header>
 
       <main className="login-content">
         <div className="login-card">
-          <h2>Sign In</h2>
-          <p className="login-subtitle">Sign in to your account to continue</p>
+          <h2>{t('auth.login', 'Sign In')}</h2>
+          <p className="login-subtitle">{t('login.subtitle', 'Sign in to your account to continue')}</p>
           
           {error && (
             <div className="error-message">
@@ -91,27 +93,27 @@ const Login: React.FC<LoginProps> = ({
           
           <form className="login-form" onSubmit={handleSubmit}>
             <div className="form-group">
-              <label htmlFor="username">Username</label>
+              <label htmlFor="username">{t('auth.username', 'Username')}</label>
               <input
                 type="text"
                 id="username"
                 name="username"
                 value={credentials.username}
                 onChange={handleChange}
-                placeholder="Enter your username"
+                placeholder={t('login.usernamePlaceholder', 'Enter your username')}
                 disabled={isLoading}
               />
             </div>
             
             <div className="form-group">
-              <label htmlFor="password">Password</label>
+              <label htmlFor="password">{t('auth.password', 'Password')}</label>
               <input
                 type="password"
                 id="password"
                 name="password"
                 value={credentials.password}
                 onChange={handleChange}
-                placeholder="Enter your password"
+                placeholder={t('login.passwordPlaceholder', 'Enter your password')}
                 disabled={isLoading}
               />
             </div>
@@ -121,25 +123,25 @@ const Login: React.FC<LoginProps> = ({
               className="primary-btn login-btn"
               disabled={isLoading}
             >
-              {isLoading ? 'Signing in...' : 'Sign In'}
+              {isLoading ? t('login.signingIn', 'Signing in...') : t('auth.login', 'Sign In')}
             </button>
           </form>
           
           <div className="register-prompt">
-            <p>Don't have an account?</p>
+            <p>{t('login.noAccount', 'Don\'t have an account?')}</p>
             <button 
               className="text-btn" 
               onClick={onRegisterClick}
               disabled={isLoading}
             >
-              Register
+              {t('auth.register', 'Register')}
             </button>
           </div>
         </div>
       </main>
 
       <footer className="login-footer">
-        <p>&copy; {new Date().getFullYear()} Witold Mikołajczak & Dawid Skrzypacz. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} {t('common.footerText', 'Witold Mikołajczak & Dawid Skrzypacz. All rights reserved.')}</p>
       </footer>
     </div>
   );

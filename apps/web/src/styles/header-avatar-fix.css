@@ -1,0 +1,82 @@
+/* Fix for header avatar to ensure it's a perfect circle */
+header .avatar,
+header .user-avatar,
+header .profile-avatar,
+header .user-profile,
+header [class*="avatar"],
+header [class*="profile-picture"],
+.header .avatar,
+.header .user-avatar,
+.header .profile-avatar,
+.header .user-profile,
+.header [class*="avatar"],
+.header [class*="profile-picture"],
+.main-header .avatar,
+.main-header .user-avatar,
+.main-header .profile-avatar,
+.main-header .user-profile,
+.main-header [class*="avatar"],
+.main-header [class*="profile-picture"],
+.nav-header .avatar,
+.nav-header .user-avatar,
+.nav-header .profile-avatar,
+.nav-header .user-profile,
+.nav-header [class*="avatar"],
+.nav-header [class*="profile-picture"],
+.app-header .avatar,
+.app-header .user-avatar,
+.app-header .profile-avatar,
+.app-header .user-profile,
+.app-header [class*="avatar"],
+.app-header [class*="profile-picture"] {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  overflow: hidden !important;
+  aspect-ratio: 1 / 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background-color: #4c566a !important;
+  border: 2px solid rgba(255, 255, 255, 0.5) !important;
+  box-sizing: border-box !important;
+  margin: 0 auto !important;
+}
+
+/* Ensure text within the avatar is centered and properly sized */
+header .avatar *,
+header .user-avatar *,
+header .profile-avatar *,
+header .user-profile *,
+header [class*="avatar"] *,
+header [class*="profile-picture"] *,
+.header .avatar *,
+.header .user-avatar *,
+.header .profile-avatar *,
+.header .user-profile *,
+.header [class*="avatar"] *,
+.header [class*="profile-picture"] *,
+.main-header .avatar *,
+.main-header .user-avatar *,
+.main-header .profile-avatar *,
+.main-header .user-profile *,
+.main-header [class*="avatar"] *,
+.main-header [class*="profile-picture"] *,
+.nav-header .avatar *,
+.nav-header .user-avatar *,
+.nav-header .profile-avatar *,
+.nav-header .user-profile *,
+.nav-header [class*="avatar"] *,
+.nav-header [class*="profile-picture"] *,
+.app-header .avatar *,
+.app-header .user-avatar *,
+.app-header .profile-avatar *,
+.app-header .user-profile *,
+.app-header [class*="avatar"] *,
+.app-header [class*="profile-picture"] * {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #f5f5f5 !important;
+  font-weight: bold !important;
+}

@@ -1,0 +1,53 @@
+/* Specific fix for profile page avatar to ensure it's perfectly circular */
+.profile-page .profile-picture-container,
+.profile-section .profile-picture-container,
+.profile-information .profile-picture-container,
+#profile-section .profile-picture-container,
+.profile-section-container .profile-picture-container,
+[class*="profile"] .profile-picture-container {
+  width: 150px !important;
+  height: 150px !important;
+  border-radius: 50% !important;
+  overflow: visible !important;
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 auto 1rem auto !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.profile-page .profile-picture,
+.profile-page .profile-picture-placeholder,
+.profile-section .profile-picture,
+.profile-section .profile-picture-placeholder,
+.profile-information .profile-picture,
+.profile-information .profile-picture-placeholder,
+#profile-section .profile-picture,
+#profile-section .profile-picture-placeholder,
+.profile-section-container .profile-picture,
+.profile-section-container .profile-picture-placeholder,
+[class*="profile"] .profile-picture,
+[class*="profile"] .profile-picture-placeholder {
+  width: 150px !important;
+  height: 150px !important;
+  border-radius: 50% !important;
+  overflow: hidden !important;
+  background-color: #4c566a !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #f5f5f5 !important;
+  aspect-ratio: 1 / 1 !important;
+  box-sizing: border-box !important;
+}
+
+/* Make sure the edit button is positioned correctly */
+.profile-page .profile-picture-edit-icon,
+.profile-section .profile-picture-edit-icon {
+  position: absolute !important;
+  bottom: 5px !important;
+  right: 5px !important;
+  z-index: 10 !important;
+}

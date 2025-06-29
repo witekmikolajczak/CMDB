@@ -56,7 +56,8 @@ CREATE TABLE user_statuses (
 -- Insert default roles
 INSERT INTO roles (name, description) VALUES 
 ('admin', 'Administrator with full system access'),
-('standard_user', 'Regular user with limited access');
+('manager', 'Department manager with access to their own department'),
+('standard_user', 'Regular user with limited access to view their department');
 
 -- Insert default statuses
 INSERT INTO user_statuses (name, description) VALUES 
@@ -88,6 +89,36 @@ CREATE TABLE users (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Department Users (join table for many-to-many relationship)
+CREATE TABLE department_users (
+    id SERIAL PRIMARY KEY,
+    department_id INTEGER NOT NULL REFERENCES departments(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    assignment_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(department_id, user_id)
+);
+
+-- Create indexes for department_users
+CREATE INDEX idx_department_users_department_id ON department_users(department_id);
+CREATE INDEX idx_department_users_user_id ON department_users(user_id);
+
+-- User Preferences
+CREATE TABLE cmdb.user_preferences (
+    id SERIAL PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    preference_key VARCHAR(50) NOT NULL,
+    preference_value TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, preference_key)
+);
+
+-- Add indexes for user preferences
+CREATE INDEX idx_user_preferences_user_id ON cmdb.user_preferences(user_id);
+CREATE INDEX idx_user_preferences_key ON cmdb.user_preferences(preference_key);
 
 -- Asset Categories
 CREATE TABLE asset_categories (

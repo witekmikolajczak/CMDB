@@ -7,10 +7,15 @@ async function bootstrap() {
   
   // Enable CORS for the frontend application
   app.enableCors({
-    origin: ['http://localhost:5173', 'http://localhost:3000'], // Both Vite and Next.js default ports
+    origin: [
+      'http://localhost:5173',
+      'http://localhost:3000',
+      'http://127.0.0.1:5173',
+      'http://127.0.0.1:3000'
+    ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control', 'Pragma']
   });
   
   await app.listen(process.env.PORT ?? 3001);

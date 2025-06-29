@@ -15,7 +15,7 @@ export class AppController {
 
   @Public()
   @Get('status')
-  getDatabaseStatus() {
+  async getDatabaseStatus() {
     return this.appService.getDatabaseStatus();
   }
 }

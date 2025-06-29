@@ -1,0 +1,57 @@
+/* Bulk Upload Styles */
+
+.bulk-actions {
+  display: flex;
+  gap: 10px;
+  margin-left: 10px;
+}
+
+.secondary-btn {
+  background-color: #f0f0f0;
+  color: #333;
+  border: 1px solid #ccc;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.secondary-btn:hover {
+  background-color: #e0e0e0;
+}
+
+.upload-btn {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  display: inline-block;
+}
+
+.upload-btn:hover {
+  background-color: #45a049;
+}
+
+/* Message styling for bulk upload results */
+.bulk-upload-results {
+  margin-top: 20px;
+  padding: 15px;
+  border-radius: 4px;
+}
+
+.bulk-upload-success {
+  background-color: #e8f5e9;
+  border: 1px solid #a5d6a7;
+  color: #2e7d32;
+}
+
+.bulk-upload-error {
+  background-color: #ffebee;
+  border: 1px solid #ef9a9a;
+  color: #c62828;
+}

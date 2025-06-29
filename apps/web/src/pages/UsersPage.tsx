@@ -1,6 +1,9 @@
 // apps/web/src/pages/UsersPage.tsx
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import '../styles/UsersPage.css';
+import '../styles/BulkUpload.css';
+import ProfilePictureUploader from '../components/ProfilePictureUploader';
 import { useAuth } from '../contexts/AuthContext';
 
 // Define interfaces
@@ -39,7 +42,20 @@ interface Status {
 // Helper function to fetch profile image
 const fetchProfileImage = async (userId: string): Promise<string | null> => {
   try {
-    const response = await fetch(`http://localhost:3001/users/profile-picture/${userId}`);
+    // Get authentication token
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      console.warn('No authentication token found when fetching profile picture');
+      return null;
+    }
+
+    // Include token in the request
+    const response = await fetch(`http://localhost:3001/users/profile-picture/${userId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
     if (!response.ok) {
       // If 404, return null (no profile picture)
       if (response.status === 404) {
@@ -56,18 +72,22 @@ const fetchProfileImage = async (userId: string): Promise<string | null> => {
 };
 
 const UsersPage: React.FC = () => {
+  const { t } = useTranslation(); // t is used for translation but might not be explicitly referenced in JSX
   const { user: authUser } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [userImages, setUserImages] = useState<Record<string, string | null>>({});
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true); // isLoading is used to control UI state
+  const [error, setError] = useState<string | null>(null); // error is used for error handling
+  
+  // State for UI filtering and search
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [roleFilter, setRoleFilter] = useState<string>('All Roles');
   
   // New state for edit mode
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
+  const [isAddMode, setIsAddMode] = useState<boolean>(false);
   const [editedUser, setEditedUser] = useState<User | null>(null);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
@@ -76,66 +96,187 @@ const UsersPage: React.FC = () => {
   const [modalMessage, setModalMessage] = useState<{title: string, text: string, type: string} | null>(null);
   const [showConfirmDelete, setShowConfirmDelete] = useState<boolean>(false);
 
-  // State for profile picture upload
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [uploadProgress, setUploadProgress] = useState<boolean>(false);
 
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  // Function to fetch users data - extracted for reuse
+  const fetchUsers = async () => {
+    setIsLoading(true);
+    setError(null);
 
-  // Fetch users from the API
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        
-        const token = localStorage.getItem('auth_token');
-        if (!token) {
-          setError('Authentication token not found');
-          setIsLoading(false);
-          return;
-        }
-        
-        const response = await fetch('http://localhost:3001/users', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch users: ${response.status}`);
-        }
-
-        const data = await response.json();
-        setUsers(data);
-        setFilteredUsers(data);
-
-        // Fetch profile pictures for all users
-        const imagePromises = data.map(user => 
-          fetchProfileImage(user.id).then(url => ({ userId: user.id, url }))
-        );
-        
-        const imageResults = await Promise.all(imagePromises);
-        const imageMap = imageResults.reduce((acc, { userId, url }) => {
-          acc[userId] = url;
-          return acc;
-        }, {} as Record<string, string | null>);
-        
-        setUserImages(imageMap);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch users');
-      } finally {
+    try {
+      // Get the authentication token
+      const token = localStorage.getItem('auth_token');
+      
+      if (!token) {
+        setError('Authentication required');
         setIsLoading(false);
+        return;
+      }
+
+      // Add timestamp to prevent caching but avoid CORS issues with headers
+      const response = await fetch(`http://localhost:3001/users?_t=${new Date().getTime()}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+          // Removed cache-control headers to avoid CORS issues
+        }
+        // Removed cache option as it's not needed with the timestamp parameter
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch users: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setUsers(data);
+      
+      // Apply any existing filters to the new data
+      applyFilters(data);
+
+      // Fetch profile pictures for all users
+      const imagePromises = data.map((user: User) => 
+        fetchProfileImage(user.id).then(url => ({ userId: user.id, url }))
+      );
+      
+      const imageResults = await Promise.all(imagePromises);
+      const imageMap = imageResults.reduce((acc, { userId, url }) => {
+        acc[userId] = url;
+        return acc;
+      }, {} as Record<string, string | null>);
+      
+      setUserImages(imageMap);
+      console.log('User data refreshed successfully');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch users');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  // Function to update a specific user in the users list
+  const updateUserInList = async (updatedUserId: string) => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        throw new Error('Authentication token not found');
+      }
+
+      // Fetch the updated user data
+      const response = await fetch(`http://localhost:3001/users/${updatedUserId}?_t=${new Date().getTime()}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        },
+        cache: 'no-store'
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch updated user: ${response.status}`);
+      }
+
+      const updatedUserData = await response.json();
+      
+      // Update the user in the list
+      setUsers(prevUsers => {
+        const newUsers = [...prevUsers];
+        const index = newUsers.findIndex(user => user.id === updatedUserId);
+        
+        if (index !== -1) {
+          newUsers[index] = updatedUserData;
+        }
+        
+        return newUsers;
+      });
+
+      // Also update the filtered users
+      setFilteredUsers(prevUsers => {
+        const newUsers = [...prevUsers];
+        const index = newUsers.findIndex(user => user.id === updatedUserId);
+        
+        if (index !== -1) {
+          newUsers[index] = updatedUserData;
+        }
+        
+        return newUsers;
+      });
+
+      // Also update the user image if needed
+      fetchProfileImage(updatedUserId).then(url => {
+        setUserImages(prev => ({
+          ...prev,
+          [updatedUserId]: url
+        }));
+      });
+
+      console.log('User data updated successfully');
+      
+      // If this is the selected user, update it
+      if (selectedUser && selectedUser.id === updatedUserId) {
+        setSelectedUser(updatedUserData);
+      }
+      
+      // If this is the edited user, update it
+      if (editedUser && editedUser.id === updatedUserId) {
+        setEditedUser(updatedUserData);
+      }
+      
+      return updatedUserData;
+    } catch (err) {
+      console.error('Error updating user in list:', err);
+      return null;
+    }
+  };
+  
+  // Track component visibility for refreshing data
+  useEffect(() => {
+    // Function to handle visibility change
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('Page became visible, refreshing users data');
+        fetchUsers();
       }
     };
 
+    // Add event listener for visibility change
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Clean up
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
+  // Fetch users from the API on component mount
+  useEffect(() => {
     fetchUsers();
+    fetchUserRoles();
+    fetchUserStatuses();
+    fetchDepartments();
+  }, []);
+  
+  // Listen for user profile updates in localStorage
+  useEffect(() => {
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'auth_user' && event.newValue) {
+        try {
+          const userData = JSON.parse(event.newValue);
+          // Update this user in our list
+          updateUserInList(userData.id);
+        } catch (error) {
+          console.error('Error parsing updated user data:', error);
+        }
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   // Fetch departments from the API
-  useEffect(() => {
-    const fetchDepartments = async () => {
+  const fetchDepartments = async () => {
       try {
         const token = localStorage.getItem('auth_token');
         if (!token) return;
@@ -157,12 +298,8 @@ const UsersPage: React.FC = () => {
       }
     };
     
-    fetchDepartments();
-  }, []);
-
   // Fetch roles from the API
-  useEffect(() => {
-    const fetchRoles = async () => {
+  const fetchUserRoles = async () => {
       try {
         const token = localStorage.getItem('auth_token');
         if (!token) return;
@@ -189,12 +326,8 @@ const UsersPage: React.FC = () => {
       }
     };
     
-    fetchRoles();
-  }, []);
-
   // Fetch statuses from the API
-  useEffect(() => {
-    const fetchStatuses = async () => {
+  const fetchUserStatuses = async () => {
       try {
         const token = localStorage.getItem('auth_token');
         if (!token) return;
@@ -221,49 +354,13 @@ const UsersPage: React.FC = () => {
       }
     };
     
-    fetchStatuses();
-  }, []);
-
-  // Update users list with profile pictures
-  const updateUsersWithProfilePictures = async (updatedUser: User) => {
-    try {
-      const token = localStorage.getItem('auth_token');
-      if (!token) {
-        throw new Error('Authentication token not found');
-      }
-
-      const response = await fetch(`http://localhost:3001/users/${updatedUser.id}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch updated user: ${response.status}`);
-      }
-
-      const userData = await response.json();
-      const updatedUsers = users.map(u => u.id === userData.id ? userData : u);
-      setUsers(updatedUsers);
-      setFilteredUsers(updatedUsers);
-
-      // Update profile picture if it exists
-      const profilePicture = await fetchProfileImage(userData.id);
-      if (profilePicture) {
-        setUserImages(prev => ({
-          ...prev,
-          [userData.id]: profilePicture
-        }));
-      }
-    } catch (error) {
-      console.error('Error updating users list:', error);
-    }
-  };
-
-  // Handle search and filtering
-  useEffect(() => {
-    let result = [...users];
+  // Apply filters to the users list
+  
+  // This comment is left to maintain the code structure
+  
+  // Apply filters to users list
+  const applyFilters = (usersList: User[]) => {
+    let result = [...usersList];
     
     // Apply search term filter
     if (searchTerm) {
@@ -272,21 +369,21 @@ const UsersPage: React.FC = () => {
         user.firstName.toLowerCase().includes(search) ||
         user.lastName.toLowerCase().includes(search) ||
         user.email.toLowerCase().includes(search) ||
-        user.department.toLowerCase().includes(search)
+        (user.department && user.department.toLowerCase().includes(search))
       );
     }
     
     // Apply role filter
     if (roleFilter !== 'All Roles') {
-      const role = roles.find(r => r.name.toLowerCase() === roleFilter.toLowerCase());
+      const role = roles.find(r => r.name === roleFilter);
       if (role) {
         result = result.filter(user => user.roleId === role.id);
       }
     }
     
     setFilteredUsers(result);
-  }, [users, searchTerm, roleFilter]);
-
+  };
+  
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -297,11 +394,19 @@ const UsersPage: React.FC = () => {
     setRoleFilter(e.target.value);
   };
 
+  // Effect to apply filters when users, searchTerm, or roleFilter changes
+  useEffect(() => {
+    if (users.length > 0) {
+      applyFilters(users);
+    }
+  }, [users, searchTerm, roleFilter, roles]);
+  
   // Handle edit user
   const handleEditUser = (user: User) => {
     setSelectedUser(user);
     setEditedUser({...user});
     setIsEditMode(true);
+    setIsAddMode(false);
   };
 
   // Handle input change in edit form
@@ -314,14 +419,25 @@ const UsersPage: React.FC = () => {
       [name]: value
     });
   };
-
-  // Handle save edited user
+  
+  // Handle close modal
+  const handleCloseModal = () => {
+    setModalMessage(null);
+    setSelectedUser(null);
+    setEditedUser(null);
+    setIsEditMode(false);
+    setIsAddMode(false);
+    setShowConfirmDelete(false);
+  };
+  
+  // Save edited user
   const handleSaveUser = async () => {
     if (!editedUser) return;
     
+    setIsSubmitting(true);
+    setError(null);
+    
     try {
-      setIsSubmitting(true);
-      
       const token = localStorage.getItem('auth_token');
       if (!token) {
         setModalMessage({
@@ -329,61 +445,99 @@ const UsersPage: React.FC = () => {
           text: 'Authentication token not found',
           type: 'error'
         });
+        setIsSubmitting(false);
         return;
       }
       
       // Get department ID from selected department name
       const selectedDept = departments.find(d => d.name === editedUser.department);
-      const departmentId = selectedDept?.id || null;
       
-      // Prepare user data for update
+      // Prepare user data for update or create
+      const { firstName, lastName, email } = editedUser;
+      
+      // Ensure roleId is always a valid number (default to 2 for Standard User)
+      const roleId = editedUser.roleId 
+        ? (typeof editedUser.roleId === 'string' ? parseInt(editedUser.roleId) : editedUser.roleId) 
+        : 2;
+      
+      // Ensure statusId is always a valid number (default to 1 for Active)
+      const statusId = editedUser.statusId 
+        ? (typeof editedUser.statusId === 'string' ? parseInt(editedUser.statusId) : editedUser.statusId) 
+        : 1;
+      
       const userData = {
-        ...editedUser,
+        firstName,
+        lastName,
+        email,
         departmentId: selectedDept?.id || null,
-        department: undefined,
-        roleId: editedUser.roleId ? parseInt(editedUser.roleId.toString()) : null,
-        statusId: editedUser.statusId ? parseInt(editedUser.statusId.toString()) : null,
-        role: undefined,
-        status: undefined
+        roleId: roleId,
+        statusId: statusId
       };
       
-      const response = await fetch(`http://localhost:3001/users/${editedUser.id}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(userData)
-      });
+      let response;
+      let successMessage;
       
-      if (!response.ok) {
-        throw new Error(`Failed to update user: ${response.status}`);
+      if (isAddMode) {
+        // Create new user
+        response = await fetch('http://localhost:3001/users', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(userData)
+        });
+        successMessage = 'User created successfully';
+      } else {
+        // Update existing user
+        response = await fetch(`http://localhost:3001/users/${editedUser.id}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ ...userData, id: editedUser.id })
+        });
+        successMessage = 'User updated successfully';
       }
       
-      const updatedUser = await response.json();
+      if (!response.ok) {
+        throw new Error(`Failed to ${isAddMode ? 'create' : 'update'} user: ${response.status}`);
+      }
+      
+      const resultUser = await response.json();
       
       // Update users list
-      setUsers(users.map(u => u.id === updatedUser.id ? {
-        ...updatedUser,
-        department: departments.find(d => d.id === updatedUser.departmentId)?.name || 'Unassigned',
-        role: roles.find(r => r.id === updatedUser.roleId)?.name || 'Standard User',
-        status: statuses.find(s => s.id === updatedUser.statusId)?.name || 'Active'
-      } : u));
+      if (isAddMode) {
+        setUsers([...users, resultUser]);
+        setFilteredUsers([...filteredUsers, resultUser]);
+      } else {
+        setUsers(users.map(u => u.id === resultUser.id ? {
+          ...resultUser,
+          department: departments.find(d => d.id === resultUser.departmentId)?.name || 'Unassigned',
+          role: roles.find(r => r.id === resultUser.roleId)?.name || 'Standard User',
+          status: statuses.find(s => s.id === resultUser.statusId)?.name || 'Active'
+        } : u));
+      }
+      
+      // Refetch the users to ensure everything is up to date
+      fetchUsers();
       
       // Close modal and reset state
       setModalMessage({
         title: 'Success',
-        text: 'User updated successfully',
+        text: successMessage,
         type: 'success'
       });
       setIsEditMode(false);
+      setIsAddMode(false);
       setSelectedUser(null);
       setEditedUser(null);
     } catch (error) {
-      console.error('Error updating user:', error);
+      console.error('Error saving user:', error);
       setModalMessage({
         title: 'Error',
-        text: error instanceof Error ? error.message : 'Failed to update user',
+        text: error instanceof Error ? error.message : `Failed to ${isAddMode ? 'create' : 'update'} user`,
         type: 'error'
       });
     } finally {
@@ -395,9 +549,9 @@ const UsersPage: React.FC = () => {
   const handleDeleteUser = async () => {
     if (!selectedUser) return;
     
+    setIsSubmitting(true);
+    
     try {
-      setIsSubmitting(true);
-      
       const token = localStorage.getItem('auth_token');
       if (!token) {
         setModalMessage({
@@ -405,6 +559,7 @@ const UsersPage: React.FC = () => {
           text: 'Authentication token not found',
           type: 'error'
         });
+        setIsSubmitting(false);
         return;
       }
       
@@ -421,6 +576,7 @@ const UsersPage: React.FC = () => {
       
       // Update users list
       setUsers(users.filter(u => u.id !== selectedUser.id));
+      setFilteredUsers(filteredUsers.filter(u => u.id !== selectedUser.id));
       
       // Close modal and reset state
       setModalMessage({
@@ -442,55 +598,15 @@ const UsersPage: React.FC = () => {
     }
   };
 
-  // Handle profile picture change
-  const handleProfilePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    
-    // Check file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setModalMessage({
-        title: 'Error',
-        text: 'Profile picture must be less than 5MB',
-        type: 'error'
-      });
-      return;
-    }
-    
-    // Check file type
-    if (!['image/jpeg', 'image/png', 'image/gif'].includes(file.type)) {
-      setModalMessage({
-        title: 'Error',
-        text: 'Only JPEG, PNG, and GIF images are allowed',
-        type: 'error'
-      });
-      return;
-    }
-    
-    setSelectedFile(file);
-    
-    // Create preview URL
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPreviewUrl(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-  };
-
   // Handle profile picture upload
   const handleProfilePictureUpload = async (userId: string, file: File) => {
     try {
-      setUploadProgress(true);
-      
-      const formData = new FormData();
-      formData.append('profilePicture', file);
-      
       const response = await fetch(`http://localhost:3001/users/${userId}/profile-picture`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
         },
-        body: formData
+        body: file
       });
 
       if (!response.ok) {
@@ -524,8 +640,6 @@ const UsersPage: React.FC = () => {
         text: 'Failed to upload profile picture',
         type: 'error'
       });
-    } finally {
-      setUploadProgress(false);
     }
   };
 
@@ -571,13 +685,144 @@ const UsersPage: React.FC = () => {
     }
   };
 
-  // Close modal
-  const handleCloseModal = () => {
-    setModalMessage(null);
-    setSelectedUser(null);
-    setEditedUser(null);
-    setIsEditMode(false);
-    setShowConfirmDelete(false);
+  // Handle CSV template download
+  const handleDownloadCsvTemplate = async () => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        setModalMessage({
+          title: 'Error',
+          text: 'Authentication token not found',
+          type: 'error'
+        });
+        return;
+      }
+
+      // Fetch the CSV template
+      const response = await fetch('http://localhost:3001/users/template/csv', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to download CSV template: ${response.status}`);
+      }
+
+      // Get the CSV content
+      const csvContent = await response.text();
+
+      // Create a blob and download link
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'user_template.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      setModalMessage({
+        title: 'Success',
+        text: 'CSV template downloaded successfully',
+        type: 'success'
+      });
+    } catch (error) {
+      console.error('Error downloading CSV template:', error);
+      setModalMessage({
+        title: 'Error',
+        text: error instanceof Error ? error.message : 'Failed to download CSV template',
+        type: 'error'
+      });
+    }
+  };
+
+  // Handle CSV file upload for bulk user creation
+  const handleCsvFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) {
+      return;
+    }
+
+    const file = e.target.files[0];
+    setIsSubmitting(true);
+
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        setModalMessage({
+          title: 'Error',
+          text: 'Authentication token not found',
+          type: 'error'
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Create form data
+      const formData = new FormData();
+      formData.append('file', file);
+
+      // Upload the CSV file
+      const response = await fetch('http://localhost:3001/users/bulk/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to upload CSV: ${response.status}`);
+      }
+
+      // If the response is a CSV file (for credentials), download it
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('text/csv')) {
+        const csvContent = await response.text();
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'new_users_credentials.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        // Refresh the users list
+        fetchUsers();
+
+        setModalMessage({
+          title: 'Success',
+          text: 'Users imported successfully. A CSV file with credentials has been downloaded.',
+          type: 'success'
+        });
+      } else {
+        // Parse JSON response
+        const result = await response.json();
+        
+        // Refresh the users list
+        fetchUsers();
+
+        setModalMessage({
+          title: 'Success',
+          text: `${result.message}`,
+          type: 'success'
+        });
+      }
+    } catch (error) {
+      console.error('Error uploading CSV file:', error);
+      setModalMessage({
+        title: 'Error',
+        text: error instanceof Error ? error.message : 'Failed to upload CSV file',
+        type: 'error'
+      });
+    } finally {
+      setIsSubmitting(false);
+      // Reset the file input
+      e.target.value = '';
+    }
   };
 
   return (
@@ -586,45 +831,110 @@ const UsersPage: React.FC = () => {
         <h1>User Management</h1>
         <div className="header-actions">
           {authUser?.role === 'admin' && (
-            <button 
-              className="primary-btn" 
-              onClick={() => {
-                setSelectedUser(null);
-                setEditedUser(null);
-                setIsEditMode(true);
-              }}
-            >
-              + Add New User
-            </button>
+            <>
+              <button 
+                className="primary-btn" 
+                onClick={() => {
+                  // Create empty user template for the form
+                  const defaultRoleId = roles.length > 0 ? (() => {
+                    const standardUserRole = roles.find(r => r.name === 'Standard User');
+                    if (standardUserRole) {
+                      return typeof standardUserRole.id === 'string' 
+                        ? parseInt(standardUserRole.id) 
+                        : standardUserRole.id;
+                    }
+                    return 2; // Default role ID if not found
+                  })() : 2;
+                  
+                  const defaultStatusId = statuses.length > 0 ? (() => {
+                    const activeStatus = statuses.find(s => s.name === 'Active');
+                    if (activeStatus) {
+                      return typeof activeStatus.id === 'string' 
+                        ? parseInt(activeStatus.id) 
+                        : activeStatus.id;
+                    }
+                    return 1; // Default status ID if not found
+                  })() : 1;
+                  
+                  setSelectedUser({
+                    id: '',
+                    firstName: '',
+                    lastName: '',
+                    email: '',
+                    roleId: defaultRoleId,
+                    statusId: defaultStatusId,
+                    department: '',
+                    role: 'Standard User',
+                    status: 'Active'
+                  });
+                  
+                  setEditedUser({
+                    id: '',
+                    firstName: '',
+                    lastName: '',
+                    email: '',
+                    roleId: defaultRoleId,
+                    statusId: defaultStatusId,
+                    department: '',
+                    role: 'Standard User',
+                    status: 'Active'
+                  });
+                  setIsEditMode(true);
+                  setIsAddMode(true);
+                }}
+              >
+                + Add New User
+              </button>
+              <div className="bulk-actions">
+                <button 
+                  className="secondary-btn" 
+                  onClick={handleDownloadCsvTemplate}
+                >
+                  Download CSV Template
+                </button>
+                <label className="upload-btn">
+                  <input 
+                    type="file" 
+                    accept=".csv" 
+                    onChange={handleCsvFileUpload} 
+                    style={{ display: 'none' }}
+                  />
+                  Upload Users (CSV)
+                </label>
+              </div>
+            </>
           )}
         </div>
       </header>
 
       <div className="users-content">
         <div className="users-list">
-          <div className="users-table-header">
-            <h2>Current Users</h2>
-            <div className="table-controls">
-              <input 
-                type="text" 
-                placeholder="Search users..." 
-                className="search-input" 
-                value={searchTerm}
-                onChange={handleSearchChange}
-              />
-              <select 
-                className="filter-select"
-                value={roleFilter}
-                onChange={handleRoleFilterChange}
-              >
-                <option value="All Roles">All Roles</option>
-                {roles.map(role => (
-                  <option key={role.id} value={role.name}>
-                    {role.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+          <div className="users-toolbar">
+            {isLoading ? (
+              <div className="loading-indicator">{t('common.loading')}</div>
+            ) : error ? (
+              <div className="error-message">{error}</div>
+            ) : (
+              <div className="search-filter">
+                <input
+                  type="text"
+                  placeholder={t('users.searchPlaceholder')}
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                  className="search-input"
+                />
+                <select 
+                  value={roleFilter}
+                  onChange={handleRoleFilterChange}
+                  className="filter-select"
+                >
+                  <option value="All Roles">{t('users.allRoles')}</option>
+                  {roles.map(role => (
+                    <option key={role.id} value={role.name}>{role.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
 
           <table className="users-table">
@@ -646,7 +956,7 @@ const UsersPage: React.FC = () => {
                     <div className="user-avatar">
                       {userImages[user.id] ? (
                         <img 
-                          src={userImages[user.id]} 
+                          src={userImages[user.id] || undefined} 
                           alt={`${user.firstName} ${user.lastName}`}
                           className="avatar-image"
                           onError={(e) => {
@@ -676,8 +986,9 @@ const UsersPage: React.FC = () => {
                       <button 
                         className="action-btn"
                         onClick={() => handleEditUser(user)}
+                        title="View User"
                       >
-                        View
+                        👁️
                       </button>
                       {authUser?.role === 'admin' && (
                         <>
@@ -687,8 +998,9 @@ const UsersPage: React.FC = () => {
                               setEditedUser(user);
                               setIsEditMode(true);
                             }}
+                            title="Edit User"
                           >
-                            Edit
+                            ✏️
                           </button>
                           <button 
                             className="action-btn destructive-btn"
@@ -696,8 +1008,9 @@ const UsersPage: React.FC = () => {
                               setSelectedUser(user);
                               setShowConfirmDelete(true);
                             }}
+                            title="Delete User"
                           >
-                            Delete
+                            🗑️
                           </button>
                         </>
                       )}
@@ -709,46 +1022,46 @@ const UsersPage: React.FC = () => {
           </table>
 
           {selectedUser && (
-            <div className="user-details-modal">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h2>{isEditMode ? 'Edit User' : 'User Details'}</h2>
-                  <button 
-                    className="close-btn" 
-                    onClick={handleCloseModal}
-                  >
-                    ×
-                  </button>
-                </div>
-                
-                <div className="user-details">
-                  <div className="user-details-header">
-                    <div className="user-avatar large">
-                      {userImages[selectedUser.id] ? (
-                        <img 
-                          src={userImages[selectedUser.id]} 
-                          alt={`${selectedUser.firstName} ${selectedUser.lastName}`}
-                          className="avatar-image"
-                          onError={(e) => {
-                            const img = e.target as HTMLImageElement;
-                            img.src = '/default-avatar.png';
-                          }}
-                        />
-                      ) : (
-                        <div className="default-avatar">
-                          {selectedUser.firstName.charAt(0).toUpperCase() +
-                          selectedUser.lastName.charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                    </div>
+              <div className="user-details-modal">
+                <div className="modal-content">
+                  <div className="modal-header">
+                    <h2>{isEditMode ? (isAddMode ? t('users.addNewUser') : t('users.editUser')) : t('users.userDetails')}</h2>
+                    <button 
+                      className="close-btn" 
+                      onClick={handleCloseModal}
+                    >
+                      ×
+                    </button>
                   </div>
+                  
+                  <div className="user-details">
+                    <div className="user-details-header">
+                      <div className="user-avatar large">
+                        {userImages[selectedUser.id] ? (
+                          <img 
+                            src={userImages[selectedUser.id] || undefined} 
+                            alt={`${selectedUser.firstName} ${selectedUser.lastName}`}
+                            className="avatar-image"
+                            onError={(e) => {
+                              const img = e.target as HTMLImageElement;
+                              img.src = '/default-avatar.png';
+                            }}
+                          />
+                        ) : (
+                          <div className="default-avatar">
+                            {selectedUser.firstName.charAt(0).toUpperCase() +
+                            selectedUser.lastName.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                    </div>
 
-                  {isEditMode ? (
-                    <form 
-                      className="edit-form"
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        handleSaveUser();
+                    {isEditMode ? (
+                      <form 
+                        className="edit-form"
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          handleSaveUser();
                       }}
                     >
                       <div className="form-group">
@@ -834,53 +1147,20 @@ const UsersPage: React.FC = () => {
                       </div>
 
                       <div className="form-group profile-picture-group">
-                        <div className="profile-picture-container">
-                          {previewUrl ? (
-                            <img 
-                              src={previewUrl} 
-                              alt="Preview" 
-                              className="preview-image"
-                            />
-                          ) : userImages[selectedUser.id] ? (
-                            <img 
-                              src={userImages[selectedUser.id]} 
-                              alt="Current" 
-                              className="current-image"
-                            />
-                          ) : (
-                            <div className="default-avatar">
-                              {selectedUser.firstName.charAt(0).toUpperCase() +
-                              selectedUser.lastName.charAt(0).toUpperCase()}
-                            </div>
-                          )}
-                        </div>
-                        <div className="profile-picture-buttons">
-                          <input
-                            type="file"
-                            accept="image/jpeg,image/png,image/gif"
-                            onChange={handleProfilePictureChange}
-                            ref={fileInputRef}
-                            style={{ display: 'none' }}
-                          />
-                          <button
-                            type="button"
-                            className="profile-picture-upload-btn"
-                            onClick={() => fileInputRef.current?.click()}
-                            disabled={uploadProgress}
-                          >
-                            {uploadProgress ? 'Uploading...' : 'Change Picture'}
-                          </button>
-                          {userImages[selectedUser.id] && (
-                            <button
-                              type="button"
-                              className="profile-picture-delete-btn"
-                              onClick={() => handleDeleteProfilePicture(selectedUser.id)}
-                              disabled={uploadProgress}
-                            >
-                              Remove Picture
-                            </button>
-                          )}
-                        </div>
+                        <ProfilePictureUploader
+                          initials={selectedUser.firstName.charAt(0).toUpperCase() + selectedUser.lastName.charAt(0).toUpperCase()}
+                          imageUrl={previewUrl || userImages[selectedUser.id] || ''}
+                          onUpload={async (file) => {
+                            setPreviewUrl(URL.createObjectURL(file));
+                            await handleProfilePictureUpload(selectedUser.id, file);
+                          }}
+                          onDelete={async () => {
+                            await handleDeleteProfilePicture(selectedUser.id);
+                            setPreviewUrl(null);
+                          }}
+                          loading={isSubmitting}
+                          editable={true}
+                        />
                       </div>
 
                       <div className="form-actions">

@@ -1,106 +1,85 @@
 // apps/web/src/pages/AssignmentsPage.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/AssignmentsPage.css';
 import { useAuth } from '../contexts/AuthContext';
+import { formatDate } from '../utils/formatters';
+import { getAssignments } from '../api/apiClient';
+// Will be used in future implementation
+// import { createAssignment } from '../api/apiClient';
 
-// Mock data for asset assignments
-const MOCK_ASSIGNMENTS = [
-  {
-    id: '1',
-    asset: {
-      name: 'MacBook Pro 16"',
-      assetTag: 'MAC-2023-001',
-      serialNumber: 'SN123456789',
-      type: 'Laptop'
-    },
-    assignedTo: {
-      id: 'user1',
-      name: 'John Doe',
-      email: 'john.doe@company.com',
-      department: 'IT'
-    },
-    assignedBy: {
-      name: 'Jane Smith',
-      email: 'jane.smith@company.com'
-    },
-    assignmentDate: '2023-06-15',
-    expectedReturnDate: '2024-06-15',
-    actualReturnDate: null,
-    status: 'active',
-    purpose: 'Work Laptop',
-    notes: 'Brand new laptop for software development team'
-  },
-  {
-    id: '2',
-    asset: {
-      name: 'Dell 27" Monitor',
-      assetTag: 'MON-2023-002',
-      serialNumber: 'SN987654321',
-      type: 'Monitor'
-    },
-    assignedTo: {
-      id: 'user2',
-      name: 'Emily Chen',
-      email: 'emily.chen@company.com',
-      department: 'Design'
-    },
-    assignedBy: {
-      name: 'Mike Johnson',
-      email: 'mike.johnson@company.com'
-    },
-    assignmentDate: '2023-07-01',
-    expectedReturnDate: '2024-01-01',
-    actualReturnDate: null,
-    status: 'active',
-    purpose: 'Graphic Design Workstation',
-    notes: 'High-resolution monitor for design team'
-  },
-  {
-    id: '3',
-    asset: {
-      name: 'iPhone 14 Pro',
-      assetTag: 'MOB-2023-003',
-      serialNumber: 'SN567891234',
-      type: 'Smartphone'
-    },
-    assignedTo: {
-      id: 'user3',
-      name: 'Sarah Williams',
-      email: 'sarah.williams@company.com',
-      department: 'Sales'
-    },
-    assignedBy: {
-      name: 'David Brown',
-      email: 'david.brown@company.com'
-    },
-    assignmentDate: '2023-05-20',
-    expectedReturnDate: '2024-05-20',
-    actualReturnDate: null,
-    status: 'overdue',
-    purpose: 'Business Communication',
-    notes: 'Company mobile for sales representatives'
-  }
-];
+// Interface for Assignment objects
+interface Assignment {
+  id: string;
+  asset: {
+    id: string;
+    name: string;
+    assetTag: string;
+    serialNumber: string;
+    type: string;
+  };
+  assignedTo: {
+    id: string;
+    name: string;
+    email: string;
+    department: string;
+  };
+  assignedBy: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  assignmentDate: string;
+  expectedReturnDate: string;
+  actualReturnDate: string | null;
+  status: string;
+  purpose: string;
+  notes: string;
+}
 
 const AssignmentsPage: React.FC = () => {
   const { user } = useAuth();
-  const [selectedAssignment, setSelectedAssignment] = useState<any>(null);
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
   const [filter, setFilter] = useState('all');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showNewAssignmentModal, setShowNewAssignmentModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  // Load assignments from API
+  useEffect(() => {
+    const loadAssignments = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await getAssignments();
+        setAssignments(data);
+      } catch (err) {
+        console.error('Failed to load assignments:', err);
+        setError('Failed to load assignments. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadAssignments();
+  }, []);
 
-  // Filter assignments based on status
-  const filteredAssignments = MOCK_ASSIGNMENTS.filter(assignment => {
-    if (filter === 'all') return true;
-    return assignment.status === filter;
+  // Filter assignments based on status and search term
+  const filteredAssignments = assignments.filter(assignment => {
+    // Filter by status
+    const statusMatch = filter === 'all' || assignment.status === filter;
+    
+    // Filter by search term
+    const searchMatch = searchTerm === '' || 
+      assignment.asset.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      assignment.asset.assetTag.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      assignment.assignedTo.name.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    return statusMatch && searchMatch;
   });
 
-  // Function to format date
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
+
 
   // Determine status badge color
   const getStatusBadgeClass = (status: string) => {
@@ -118,7 +97,12 @@ const AssignmentsPage: React.FC = () => {
         <h1>Asset Assignments</h1>
         <div className="header-actions">
           {user?.role === 'admin' && (
-            <button className="primary-btn">+ New Assignment</button>
+            <button 
+              className="primary-btn"
+              onClick={() => setShowNewAssignmentModal(true)}
+            >
+              + New Assignment
+            </button>
           )}
         </div>
       </header>
@@ -142,58 +126,110 @@ const AssignmentsPage: React.FC = () => {
           <input 
             type="text" 
             placeholder="Search assignments..." 
-            className="search-input" 
+            className="search-input"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
 
         <div className="assignments-table-container">
-          <table className="assignments-table">
-            <thead>
-              <tr>
-                <th>Asset</th>
-                <th>Assigned To</th>
-                <th>Assignment Date</th>
-                <th>Expected Return</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredAssignments.map(assignment => (
-                <tr key={assignment.id}>
-                  <td>
-                    <div className="asset-info">
-                      <span className="asset-name">{assignment.asset.name}</span>
-                      <span className="asset-tag">{assignment.asset.assetTag}</span>
-                    </div>
-                  </td>
-                  <td>
-                    <div className="user-info">
-                      <span className="user-name">{assignment.assignedTo.name}</span>
-                      <span className="user-department">{assignment.assignedTo.department}</span>
-                    </div>
-                  </td>
-                  <td>{formatDate(assignment.assignmentDate)}</td>
-                  <td>{formatDate(assignment.expectedReturnDate)}</td>
-                  <td>
-                    <span className={`status-badge ${getStatusBadgeClass(assignment.status)}`}>
-                      {assignment.status.replace('_', ' ')}
-                    </span>
-                  </td>
-                  <td>
-                    <button 
-                      className="action-btn"
-                      onClick={() => setSelectedAssignment(assignment)}
-                    >
-                      View Details
-                    </button>
-                  </td>
+          {loading ? (
+            <div className="loading-container">
+              <p>Loading assignments...</p>
+            </div>
+          ) : error ? (
+            <div className="error-container">
+              <p>{error}</p>
+              <button 
+                className="secondary-btn" 
+                onClick={() => window.location.reload()}
+              >
+                Retry
+              </button>
+            </div>
+          ) : filteredAssignments.length === 0 ? (
+            <div className="empty-state">
+              <h3>No assignments found</h3>
+              {searchTerm || filter !== 'all' ? (
+                <p>Try adjusting your search or filter criteria</p>
+              ) : (
+                <p>No assignments have been created yet</p>
+              )}
+            </div>
+          ) : (
+            <table className="assignments-table">
+              <thead>
+                <tr>
+                  <th>Asset</th>
+                  <th>Assigned To</th>
+                  <th>Assignment Date</th>
+                  <th>Expected Return</th>
+                  <th>Status</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filteredAssignments.map(assignment => (
+                  <tr key={assignment.id}>
+                    <td>
+                      <div className="asset-info">
+                        <span className="asset-name">{assignment.asset.name}</span>
+                        <span className="asset-tag">{assignment.asset.assetTag}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="user-info">
+                        <span className="user-name">{assignment.assignedTo.name}</span>
+                        <span className="user-department">{assignment.assignedTo.department}</span>
+                      </div>
+                    </td>
+                    <td>{formatDate(new Date(assignment.assignmentDate))}</td>
+                    <td>{formatDate(new Date(assignment.expectedReturnDate))}</td>
+                    <td>
+                      <span className={`status-badge ${getStatusBadgeClass(assignment.status)}`}>
+                        {assignment.status.replace('_', ' ')}
+                      </span>
+                    </td>
+                    <td>
+                      <button 
+                        className="action-btn"
+                        onClick={() => setSelectedAssignment(assignment)}
+                      >
+                        View Details
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
 
+        {/* New Assignment Modal */}
+        {showNewAssignmentModal && (
+          <div className="assignment-details-modal">
+            <div className="modal-content">
+              <h2>Create New Assignment</h2>
+              <p className="note">This feature is under development</p>
+              <p>In the full implementation, this form would allow you to:</p>
+              <ul>
+                <li>Select an asset from the available inventory</li>
+                <li>Select a user to assign the asset to</li>
+                <li>Set assignment details like purpose and expected return date</li>
+              </ul>
+              <div className="modal-actions">
+                <button 
+                  className="secondary-btn" 
+                  onClick={() => setShowNewAssignmentModal(false)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Assignment Details Modal */}
         {selectedAssignment && (
           <div className="assignment-details-modal">
             <div className="modal-content">
@@ -212,8 +248,8 @@ const AssignmentsPage: React.FC = () => {
                   <p><strong>Assigned To:</strong> {selectedAssignment.assignedTo.name}</p>
                   <p><strong>Department:</strong> {selectedAssignment.assignedTo.department}</p>
                   <p><strong>Assigned By:</strong> {selectedAssignment.assignedBy.name}</p>
-                  <p><strong>Assignment Date:</strong> {formatDate(selectedAssignment.assignmentDate)}</p>
-                  <p><strong>Expected Return Date:</strong> {formatDate(selectedAssignment.expectedReturnDate)}</p>
+                  <p><strong>Assignment Date:</strong> {formatDate(new Date(selectedAssignment.assignmentDate))}</p>
+                  <p><strong>Expected Return Date:</strong> {formatDate(new Date(selectedAssignment.expectedReturnDate))}</p>
                   <p><strong>Status:</strong> 
                     <span className={`status-badge ${getStatusBadgeClass(selectedAssignment.status)}`}>
                       {selectedAssignment.status.replace('_', ' ')}

@@ -1,0 +1,88 @@
+/* Direct fix for the specific double outline issue with color codes provided by the user */
+
+/* Target the exact avatar element with all possible selectors */
+.dashboard-header .user-avatar,
+.dashboard-header .user-avatar:before,
+.dashboard-header .user-avatar:after,
+.dashboard-header .user-avatar *,
+.dashboard-header .user-avatar *:before,
+.dashboard-header .user-avatar *:after {
+  /* Completely remove all borders with the specific colors mentioned */
+  border-color: transparent !important;
+  border: none !important;
+  
+  /* Remove all box shadows */
+  box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+  -moz-box-shadow: none !important;
+  
+  /* Remove all outlines */
+  outline: none !important;
+  
+  /* Remove all specific colors mentioned */
+  background-image: none !important;
+}
+
+/* Direct fix for the specific avatar with targeted styling */
+.dashboard-header .user-avatar {
+  /* Set a single clean border */
+  border: 2px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 50% !important;
+  background-color: #4c566a !important;
+  width: 40px !important;
+  height: 40px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+/* Completely reset and rebuild the user avatar from scratch */
+.dashboard-header .user-avatar {
+  /* Reset all properties to known values */
+  all: initial !important;
+  
+  /* Then add back only what we need */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  background-color: #4c566a !important;
+  border: 2px solid rgba(255, 255, 255, 0.2) !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+/* Target specific known color issues */
+.dashboard-header .user-avatar[style*="#e0e5ed"],
+.dashboard-header .user-avatar[style*="#a6abb5"],
+*[style*="#e0e5ed"],
+*[style*="#a6abb5"] {
+  border-color: transparent !important;
+}
+
+/* Finally, apply force removal of anything that might be adding outlines */
+@keyframes removeOutlines {
+  to {
+    border-color: transparent !important;
+    outline-color: transparent !important;
+    box-shadow: none !important;
+  }
+}
+
+.dashboard-header .user-avatar {
+  animation: removeOutlines 0.1s forwards !important;
+}
+
+/* Ensure any children also conform */
+.dashboard-header .user-avatar .avatar-image,
+.dashboard-header .user-avatar .default-avatar {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}

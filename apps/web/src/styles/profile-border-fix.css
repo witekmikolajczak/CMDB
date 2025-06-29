@@ -1,0 +1,17 @@
+.profile-picture-borderless {
+  border: none !important;
+  background-color: transparent !important;
+  background: none !important;
+  box-shadow: none !important;
+  padding: 5px !important;
+  overflow: visible !important;
+}
+
+/* Force remove any borders from parent containers */
+.profile-form .profile-picture-section {
+  border: none !important;
+  background-color: transparent !important;
+  background: none !important;
+  box-shadow: none !important;
+  padding: 10px !important;
+}

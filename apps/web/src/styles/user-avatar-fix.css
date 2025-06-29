@@ -1,0 +1,68 @@
+/* Fix for user avatar borders in user management page */
+.user-avatar,
+.user-profile-placeholder,
+.default-avatar,
+.avatar-container,
+.profile-picture-container,
+.profile-picture-placeholder,
+[class*="avatar"],
+[class*="profile-picture"] {
+  box-sizing: content-box !important;
+  position: relative !important;
+  border: 2px solid rgba(255, 255, 255, 0.5) !important;
+  overflow: visible !important;
+}
+
+/* Make sure inner content is properly contained */
+.user-avatar > *,
+.user-profile-placeholder > *,
+.default-avatar > *,
+.avatar-container > *,
+.profile-picture-container > *,
+.profile-picture-placeholder > *,
+[class*="avatar"] > *,
+[class*="profile-picture"] > * {
+  overflow: hidden !important;
+  border-radius: inherit !important;
+}
+
+/* Fix specifically for the user management page */
+.users-page .user-avatar,
+.users-page .user-profile-placeholder,
+.users-page .default-avatar,
+.users-list .user-avatar,
+.users-list .user-profile-placeholder,
+.users-list .default-avatar,
+.user-row .user-avatar,
+.user-row .user-profile-placeholder,
+.user-row .default-avatar {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  background-color: #4c566a !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  border: 2px solid rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Ensure text color is correct */
+.user-avatar .initials,
+.user-profile-placeholder .initials,
+.default-avatar .initials,
+.avatar-container .initials,
+.profile-picture-container .initials,
+.profile-picture-placeholder .initials,
+[class*="avatar"] .initials,
+[class*="profile-picture"] .initials,
+.user-avatar span,
+.user-profile-placeholder span,
+.default-avatar span,
+.avatar-container span,
+.profile-picture-container span,
+.profile-picture-placeholder span,
+[class*="avatar"] span,
+[class*="profile-picture"] span {
+  color: #f5f5f5 !important;
+  font-size: 2.5rem !important;
+}

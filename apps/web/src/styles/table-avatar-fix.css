@@ -1,0 +1,29 @@
+/* Specific fix for user avatars in the users table */
+.users-page table td:first-child div {
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  min-height: 40px !important;
+  max-width: 40px !important;
+  max-height: 40px !important;
+  aspect-ratio: 1 / 1 !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background-color: #4c566a !important;
+  border: 2px solid rgba(255, 255, 255, 0.5) !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+/* Make sure the MU initials are centered properly */
+.users-page table td:first-child div > * {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  color: #f5f5f5 !important;
+  font-weight: bold !important;
+}

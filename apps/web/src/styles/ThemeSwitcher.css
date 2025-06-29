@@ -1,0 +1,139 @@
+.theme-switcher {
+  display: flex;
+  align-items: center;
+  position: relative;
+  font-size: 14px;
+  width: 200px;
+}
+
+/* Custom select wrapper for the enhanced display */
+.theme-switcher .custom-select-wrapper {
+  position: relative;
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Visual representation of the current selection */
+.current-theme {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  pointer-events: none; /* Allow clicks to pass through to the select */
+  padding-left: 16px;
+  gap: 10px;
+  font-weight: 500;
+  color: var(--text-color);
+  z-index: 1;
+}
+
+.theme-icon {
+  font-size: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.theme-name {
+  font-weight: 500;
+}
+
+/* Beautiful custom select styling */
+.theme-select {
+  width: 100%;
+  padding: 12px 16px;
+  padding-right: 40px; /* Space for the custom arrow */
+  padding-left: 54px; /* Space for icon and text */
+  border-radius: 8px;
+  border: 2px solid var(--border-color);
+  background-color: var(--card-bg-color);
+  color: rgba(0,0,0,0); /* Hide the text completely */
+  text-indent: -9999px; /* Move text completely off-screen */
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Barlow', sans-serif;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  appearance: none; /* Remove default appearance */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234d94ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.theme-select option {
+  padding: 12px;
+  font-weight: 500;
+  background-color: var(--card-bg-color);
+  color: var(--text-color);
+}
+
+/* Hover and focus states */
+.theme-select:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+.theme-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(77, 148, 255, 0.25);
+}
+
+/* Subtle animation for hover state */
+.theme-select:hover + .current-theme .theme-icon {
+  transform: scale(1.1);
+}
+
+/* Add a beautiful focus effect */
+.theme-select:focus + .current-theme {
+  color: var(--primary-color);
+}
+
+/* Dark mode styles */
+html[data-theme="dark"] .theme-select,
+.dark-theme .theme-select {
+  background-color: #2c2c2c;
+  border-color: #444;
+  color: rgba(0,0,0,0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234d94ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+}
+
+html[data-theme="dark"] .theme-select:hover,
+.dark-theme .theme-select:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+html[data-theme="dark"] .theme-select:focus,
+.dark-theme .theme-select:focus {
+  box-shadow: 0 0 0 3px rgba(77, 148, 255, 0.25);
+}
+
+html[data-theme="dark"] .theme-select option,
+.dark-theme .theme-select option {
+  background-color: #2c2c2c;
+  color: #eee;
+}
+
+/* Deprecated - keeping for compatibility */
+[data-theme="dark"] .theme-toggle-btn,
+.dark-theme .theme-toggle-btn {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .theme-toggle-btn:hover,
+.dark-theme .theme-toggle-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}

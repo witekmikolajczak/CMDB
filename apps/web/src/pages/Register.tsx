@@ -1,5 +1,6 @@
 // apps/web/src/pages/Register.tsx
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import '../styles/Login.css'; // Reuse login styles
 import { authService } from '../services/authService';
 import { getDepartments } from '../api/apiClient';
@@ -16,6 +17,7 @@ interface Department {
 }
 
 const Register: React.FC<RegisterProps> = ({ onRegisterSuccess, onLoginClick }) => {
+  const { t } = useTranslation();
   // Use auth context to access updateUser method
   const { updateUser } = useAuth();
 
@@ -46,7 +48,7 @@ const Register: React.FC<RegisterProps> = ({ onRegisterSuccess, onLoginClick }) 
         const data = await getDepartments();
         setDepartments(data);
       } catch (error) {
-        console.error('Failed to fetch departments:', error);
+        console.error(t('register.fetchDepartmentsError', 'Failed to fetch departments:'), error);
       }
     };
 
@@ -76,37 +78,37 @@ const Register: React.FC<RegisterProps> = ({ onRegisterSuccess, onLoginClick }) 
     let isValid = true;
 
     if (!formData.username.trim()) {
-      newErrors.username = 'Username is required';
+      newErrors.username = t('register.usernameRequired', 'Username is required');
       isValid = false;
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
+      newErrors.email = t('register.emailRequired', 'Email is required');
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
+      newErrors.email = t('register.emailInvalid', 'Email is invalid');
       isValid = false;
     }
 
     if (!formData.password.trim()) {
-      newErrors.password = 'Password is required';
+      newErrors.password = t('register.passwordRequired', 'Password is required');
       isValid = false;
     } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters long';
+      newErrors.password = t('register.passwordLength', 'Password must be at least 8 characters long');
       isValid = false;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
+      newErrors.confirmPassword = t('auth.passwordMismatch', 'Passwords do not match');
       isValid = false;
     }
 
     if (!formData.firstName.trim()) {
-      newErrors.firstName = 'First name is required';
+      newErrors.firstName = t('register.firstNameRequired', 'First name is required');
       isValid = false;
     }
 
     if (!formData.lastName.trim()) {
-      newErrors.lastName = 'Last name is required';
+      newErrors.lastName = t('register.lastNameRequired', 'Last name is required');
       isValid = false;
     }
 
@@ -139,7 +141,7 @@ const Register: React.FC<RegisterProps> = ({ onRegisterSuccess, onLoginClick }) 
       onRegisterSuccess();
     } catch (err) {
       setErrors({
-        form: err instanceof Error ? err.message : 'Registration failed. Please try again.'
+        form: err instanceof Error ? err.message : t('register.failed', 'Registration failed. Please try again.')
       });
     } finally {
       setIsLoading(false);
@@ -151,14 +153,14 @@ const Register: React.FC<RegisterProps> = ({ onRegisterSuccess, onLoginClick }) 
       <header className="login-header">
         <div className="logo-container">
           <img src="./logo-small.svg" alt="logo" width="60px" />
-          <h1 className="app-title">InvenTrack</h1>
+          <h1 className="app-title">{t('welcome.appTitle', 'InvenTrack')}</h1>
         </div>
       </header>
 
       <main className="login-content">
         <div className="login-card register-card">
-          <h2>Create Account</h2>
-          <p className="login-subtitle">Register to access the asset management system</p>
+          <h2>{t('register.title', 'Create Account')}</h2>
+          <p className="login-subtitle">{t('register.subtitle', 'Register to access the asset management system')}</p>
           
           {errors.form && (
             <div className="error-message">
@@ -169,14 +171,14 @@ const Register: React.FC<RegisterProps> = ({ onRegisterSuccess, onLoginClick }) 
           <form className="login-form" onSubmit={handleSubmit}>
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="firstName">First Name*</label>
+                <label htmlFor="firstName">{t('auth.firstName', 'First Name')}*</label>
                 <input
                   type="text"
                   id="firstName"
                   name="firstName"
                   value={formData.firstName}
                   onChange={handleChange}
-                  placeholder="Enter your first name"
+                  placeholder={t('register.firstNamePlaceholder', 'Enter your first name')}
                   disabled={isLoading}
                   className={errors.firstName ? 'error' : ''}
                 />
@@ -184,14 +186,14 @@ const Register: React.FC<RegisterProps> = ({ onRegisterSuccess, onLoginClick }) 
               </div>
               
               <div className="form-group">
-                <label htmlFor="lastName">Last Name*</label>
+                <label htmlFor="lastName">{t('auth.lastName', 'Last Name')}*</label>
                 <input
                   type="text"
                   id="lastName"
                   name="lastName"
                   value={formData.lastName}
                   onChange={handleChange}
-                  placeholder="Enter your last name"
+                  placeholder={t('register.lastNamePlaceholder', 'Enter your last name')}
                   disabled={isLoading}
                   className={errors.lastName ? 'error' : ''}
                 />
@@ -200,14 +202,14 @@ const Register: React.FC<RegisterProps> = ({ onRegisterSuccess, onLoginClick }) 
             </div>
             
             <div className="form-group">
-              <label htmlFor="username">Username*</label>
+              <label htmlFor="username">{t('auth.username', 'Username')}*</label>
               <input
                 type="text"
                 id="username"
                 name="username"
                 value={formData.username}
                 onChange={handleChange}
-                placeholder="Choose a username"
+                placeholder={t('register.usernamePlaceholder', 'Choose a username')}
                 disabled={isLoading}
                 className={errors.username ? 'error' : ''}
               />
@@ -215,14 +217,14 @@ const Register: React.FC<RegisterProps> = ({ onRegisterSuccess, onLoginClick }) 
             </div>
             
             <div className="form-group">
-              <label htmlFor="email">Email*</label>
+              <label htmlFor="email">{t('auth.email', 'Email')}*</label>
               <input
                 type="email"
                 id="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="Enter your email"
+                placeholder={t('register.emailPlaceholder', 'Enter your email')}
                 disabled={isLoading}
                 className={errors.email ? 'error' : ''}
               />
@@ -231,14 +233,14 @@ const Register: React.FC<RegisterProps> = ({ onRegisterSuccess, onLoginClick }) 
             
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="password">Password*</label>
+                <label htmlFor="password">{t('auth.password', 'Password')}*</label>
                 <input
                   type="password"
                   id="password"
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  placeholder="Create a password"
+                  placeholder={t('register.passwordPlaceholder', 'Create a password')}
                   disabled={isLoading}
                   className={errors.password ? 'error' : ''}
                 />
@@ -246,14 +248,14 @@ const Register: React.FC<RegisterProps> = ({ onRegisterSuccess, onLoginClick }) 
               </div>
               
               <div className="form-group">
-                <label htmlFor="confirmPassword">Confirm Password*</label>
+                <label htmlFor="confirmPassword">{t('auth.confirmPassword', 'Confirm Password')}*</label>
                 <input
                   type="password"
                   id="confirmPassword"
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  placeholder="Confirm your password"
+                  placeholder={t('register.confirmPasswordPlaceholder', 'Confirm your password')}
                   disabled={isLoading}
                   className={errors.confirmPassword ? 'error' : ''}
                 />
@@ -262,7 +264,7 @@ const Register: React.FC<RegisterProps> = ({ onRegisterSuccess, onLoginClick }) 
             </div>
             
             <div className="form-group">
-              <label htmlFor="departmentId">Department (Optional)</label>
+              <label htmlFor="departmentId">{t('register.department', 'Department')} ({t('common.optional', 'Optional')})</label>
               <select
                 id="departmentId"
                 name="departmentId"
@@ -270,7 +272,7 @@ const Register: React.FC<RegisterProps> = ({ onRegisterSuccess, onLoginClick }) 
                 onChange={handleChange}
                 disabled={isLoading}
               >
-                <option value="">Select a department</option>
+                <option value="">{t('register.selectDepartment', 'Select a department')}</option>
                 {departments.map(dept => (
                   <option key={dept.id} value={dept.id}>{dept.name}</option>
                 ))}
@@ -282,25 +284,25 @@ const Register: React.FC<RegisterProps> = ({ onRegisterSuccess, onLoginClick }) 
               className="primary-btn login-btn"
               disabled={isLoading}
             >
-              {isLoading ? 'Creating Account...' : 'Create Account'}
+              {isLoading ? t('register.creating', 'Creating Account...') : t('register.title', 'Create Account')}
             </button>
           </form>
           
           <div className="register-prompt">
-            <p>Already have an account?</p>
+            <p>{t('register.alreadyHaveAccount', 'Already have an account?')}</p>
             <button 
               className="text-btn" 
               onClick={onLoginClick}
               disabled={isLoading}
             >
-              Sign In
+              {t('auth.login', 'Sign In')}
             </button>
           </div>
         </div>
       </main>
 
       <footer className="login-footer">
-        <p>&copy; {new Date().getFullYear()} Witold Mikołajczak & Dawid Skrzypacz. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} {t('common.footerText', 'Witold Mikołajczak & Dawid Skrzypacz. All rights reserved.')}</p>
       </footer>
     </div>
   );

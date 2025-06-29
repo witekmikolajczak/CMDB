@@ -5,6 +5,24 @@
     <link rel="icon" type="image/svg+xml" href="/logo-small.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CMDB - Configuration Management Database</title>
+    <script>
+      // Immediately apply user's theme preference
+      const theme = localStorage.getItem('cmdbTheme') || localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      
+      // Apply appropriate classes for the theme
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+        document.body.classList.add('dark-theme');
+        document.body.classList.remove('light-theme');
+      } else {
+        document.documentElement.classList.add('light');
+        document.documentElement.classList.remove('dark');
+        document.body.classList.add('light-theme');
+        document.body.classList.remove('dark-theme');
+      }
+    </script>
     <!-- Google Fonts - Barlow -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

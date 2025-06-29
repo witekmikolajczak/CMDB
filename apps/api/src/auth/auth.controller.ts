@@ -32,19 +32,22 @@ export class AuthController {
       );
     }
   }
-  @Public()
   @Get('validate')
   async validateToken(@Headers('authorization') authHeader: string) {
     try {
-      // Extract token from Bearer format
       const token = authHeader?.split(' ')[1];
-      
       if (!token) {
-        throw new HttpException('No token provided', HttpStatus.UNAUTHORIZED);
+        return { valid: false, message: 'No token provided' };
       }
       
       const payload = await this.authService.validateToken(token);
-      return { valid: true, user: payload };
+      const user = await this.authService.getUserById(payload.sub);
+      
+      if (!user) {
+        return { valid: false, message: 'User not found' };
+      }
+      
+      return { valid: true, user: user };
     } catch (error) {
       throw new HttpException(
         error.message || 'Token validation failed',

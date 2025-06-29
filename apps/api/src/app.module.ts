@@ -8,6 +8,8 @@ import { UsersModule } from './users/users.module';
 import { DepartmentsModule } from './departments/departments.module';
 import { AssetsModule } from './assets/assets.module';
 import { AssignmentsModule } from './assignments/assignments.module';
+import { UserPreferencesModule } from './user-preferences/user-preferences.module';
+import { AssetTypesModule } from './asset-types/asset-types.module';
 
 @Module({
   imports: [
@@ -17,6 +19,8 @@ import { AssignmentsModule } from './assignments/assignments.module';
     DepartmentsModule,
     AssetsModule,
     AssignmentsModule,
+    UserPreferencesModule,
+    AssetTypesModule,
   ],
   controllers: [AppController],
   providers: [

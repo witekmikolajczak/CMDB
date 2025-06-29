@@ -1,0 +1,161 @@
+/* Styles for the app settings section (language and theme switchers) */
+.app-settings {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 8px 16px;
+}
+
+/* Dark mode styles */
+[data-theme="dark"],
+body.dark-theme,
+html[data-theme="dark"] {
+  --bg-color: #121212;
+  --text-color: #f5f5f5;
+  --primary-color: #4d94ff;
+  --secondary-color: #333333;
+  --border-color: #444;
+  --input-bg: #1e1e1e;
+  --card-bg-color: #1e1e1e;
+  --card-bg: #1e1e1e;
+  --hover-color: rgba(255, 255, 255, 0.05);
+  --shadow-color: rgba(0, 0, 0, 0.3);
+  
+  /* Additional variables */
+  --header-bg: #1e1e1e;
+  --sidebar-bg: #1a1a1a;
+  --nav-active-bg: #333333;
+  --table-header-bg: #333333;
+  --table-row-hover: #2a2a2a;
+  --table-border: #444444;
+  --button-text: #ffffff;
+  --disabled-bg: #555555;
+  --disabled-text: #aaaaaa;
+  --focus-ring: rgba(77, 148, 255, 0.4);
+}
+
+/* Light mode styles - default */
+:root {
+  --bg-color: #f5f5f5;
+  --text-color: #121212;
+  --primary-color: #0066cc;
+  --secondary-color: #e6e6e6;
+  --border-color: #ddd;
+  --input-bg: #ffffff;
+  --card-bg-color: #ffffff;
+  --card-bg: #ffffff;
+  --hover-color: rgba(0, 0, 0, 0.05);
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  
+  /* Additional variables */
+  --header-bg: #ffffff;
+  --sidebar-bg: #f8f8f8;
+  --nav-active-bg: #e6e6e6;
+  --table-header-bg: #f0f0f0;
+  --table-row-hover: #f5f5f5;
+  --table-border: #e0e0e0;
+  
+  /* Profile page variables */
+  --background: #f5f5f5;
+  --foreground: #121212;
+  --card: #ffffff;
+  --primary: #0066cc;
+  --primary-foreground: #ffffff;
+  --primary-hover: #0052a3;
+  --primary-shadow: rgba(0, 102, 204, 0.3);
+  --secondary: #4ECDC4;
+  --secondary-foreground: #121212;
+  --secondary-hover: #3db9b1;
+  --muted: #e6e6e6;
+  --muted-foreground: #666666;
+  --accent: #f4f4f4;
+  --accent-foreground: #121212;
+  --destructive: #BF616A;
+  --destructive-foreground: #ffffff;
+  --destructive-hover: #a6545c;
+  --border: #ddd;
+  --success: #4ECDC4;
+  --overlay: rgba(0, 0, 0, 0.5);
+  --button-text: #ffffff;
+}
+
+/* Apply theme colors to elements - global scope */
+html, body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* All main content containers */
+.app, 
+.dashboard-container,
+.main-content,
+.container,
+.page-content,
+.content-area {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+/* Form elements */
+input, select, textarea, button {
+  background-color: var(--input-bg);
+  border-color: var(--border-color);
+  color: var(--text-color);
+}
+
+/* Cards and panels */
+.card, .panel, .preference-item,
+.dashboard-sidebar, .assignments-table-container,
+.user-info-card, .asset-card {
+  background-color: var(--card-bg-color);
+  border-color: var(--border-color);
+  color: var(--text-color);
+}
+
+/* Headers and navigation */
+.dashboard-header, .app-header, .page-header {
+  background-color: var(--header-bg);
+  border-color: var(--border-color);
+  color: var(--text-color);
+}
+
+.dashboard-sidebar {
+  background-color: var(--sidebar-bg);
+  border-color: var(--border-color);
+}
+
+.nav-item {
+  color: var(--text-color);
+}
+
+.nav-item.active {
+  background-color: var(--nav-active-bg);
+}
+
+/* Tables */
+table, th, td {
+  border-color: var(--table-border);
+  color: var(--text-color);
+}
+
+table thead th {
+  background-color: var(--table-header-bg);
+}
+
+table tbody tr:hover {
+  background-color: var(--table-row-hover);
+}
+
+/* Ensure dropdown menus are properly styled */
+.dropdown-menu, .user-menu-dropdown {
+  background-color: var(--card-bg-color);
+  border-color: var(--border-color);
+  color: var(--text-color);
+  box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+.dropdown-item:hover {
+  background-color: var(--hover-color);
+}

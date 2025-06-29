@@ -1,0 +1,104 @@
+/* Master fix for all avatar/profile picture styles across the application */
+
+/* ===== HEADER AVATAR FIXES ===== */
+.dashboard-header .user-avatar,
+.dashboard-header .user-profile-placeholder,
+header .user-avatar,
+header .user-profile-placeholder,
+.user-info-container .user-avatar,
+.user-info-container .user-profile-placeholder,
+.user-menu .user-avatar,
+.user-menu .user-profile-placeholder {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  overflow: hidden !important;
+  background-color: #4c566a !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-right: 0.5rem !important;
+  position: relative !important;
+  flex-shrink: 0 !important;
+}
+
+/* ===== PROFILE PAGE AVATAR FIXES ===== */
+.profile-picture-container,
+.profile-information .profile-picture-container,
+.profile-page .profile-picture-container,
+[class*="profile"] .profile-picture-container {
+  width: 150px !important;
+  height: 150px !important;
+  border-radius: 50% !important;
+  overflow: visible !important;
+  margin: 0 auto 1rem auto !important;
+  position: relative !important;
+  border: none !important;
+}
+
+.profile-picture,
+.profile-picture-placeholder,
+.profile-information .profile-picture,
+.profile-information .profile-picture-placeholder,
+.profile-page .profile-picture,
+.profile-page .profile-picture-placeholder,
+[class*="profile"] .profile-picture,
+[class*="profile"] .profile-picture-placeholder {
+  width: 150px !important;
+  height: 150px !important;
+  border-radius: 50% !important;
+  background-color: #4c566a !important;
+  border: 3px solid var(--primary-color, #4d94ff) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+/* ===== USER MANAGEMENT TABLE AVATAR FIXES ===== */
+.users-table td:first-child div,
+.users-list .user-avatar,
+.user-row .user-avatar,
+table .user-avatar {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  background-color: #4c566a !important;
+  overflow: hidden !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 2px solid rgba(255, 255, 255, 0.5) !important;
+  box-sizing: border-box !important;
+}
+
+/* ===== COMMON TEXT STYLING FOR ALL AVATARS ===== */
+.user-avatar *,
+.profile-picture-placeholder *,
+.user-profile-placeholder *,
+[class*="avatar"] *,
+[class*="profile"] [class*="placeholder"] *,
+.users-table td:first-child div * {
+  color: #f5f5f5 !important;
+  font-weight: bold !important;
+  text-transform: uppercase !important;
+}
+
+/* Specific font sizes for different contexts */
+.dashboard-header .user-avatar *,
+.user-info-container .user-avatar *,
+.user-menu .user-avatar *,
+header .user-avatar * {
+  font-size: 1rem !important;
+}
+
+.profile-picture-placeholder *,
+.profile-page .profile-picture-placeholder * {
+  font-size: 2.5rem !important;
+}
+
+.users-table td:first-child div *,
+table .user-avatar * {
+  font-size: 1rem !important;
+}

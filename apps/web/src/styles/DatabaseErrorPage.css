@@ -1,0 +1,126 @@
+/* apps/web/src/styles/DatabaseErrorPage.css */
+.database-error-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: var(--background);
+  padding: 1rem;
+}
+
+.database-error-card {
+  width: 100%;
+  max-width: 600px;
+  background-color: var(--card);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  text-align: center;
+  margin: 1rem;
+}
+
+.error-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: var(--error);
+}
+
+.database-error-card h2 {
+  color: var(--error);
+  margin-bottom: 1.5rem;
+  font-size: 1.75rem;
+}
+
+.error-description {
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  color: var(--foreground);
+}
+
+.error-list {
+  text-align: left;
+  margin: 1rem auto;
+  max-width: 80%;
+  color: var(--muted-foreground);
+}
+
+.error-list li {
+  margin-bottom: 0.5rem;
+}
+
+.error-details {
+  background-color: rgba(255, 0, 0, 0.05);
+  border: 1px solid var(--error);
+  border-radius: 4px;
+  padding: 0.75rem;
+  margin: 1rem 0;
+  font-family: monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 0.875rem;
+  color: var(--error);
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.primary-button, .secondary-button {
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s, transform 0.1s;
+  border: none;
+}
+
+.primary-button {
+  background-color: var(--primary);
+  color: white;
+}
+
+.primary-button:hover:not(:disabled) {
+  background-color: var(--primary-hover);
+}
+
+.secondary-button {
+  background-color: var(--secondary);
+  color: var(--secondary-foreground);
+}
+
+.secondary-button:hover:not(:disabled) {
+  background-color: var(--secondary-hover);
+}
+
+.primary-button:disabled, .secondary-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.message {
+  margin: 1rem 0;
+  padding: 0.75rem;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.message.success {
+  background-color: rgba(0, 128, 0, 0.1);
+  color: green;
+  border: 1px solid green;
+}
+
+.message.error {
+  background-color: rgba(255, 0, 0, 0.1);
+  color: var(--error);
+  border: 1px solid var(--error);
+}
+
+.help-text {
+  margin-top: 1.5rem;
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}

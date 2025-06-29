@@ -1,0 +1,75 @@
+/* Critical force fix to eliminate ALL outlines from header avatar */
+
+/* Target with maximum possible specificity */
+body .dashboard-header .user-avatar[class],
+html .dashboard-header .user-avatar[class],
+#root .dashboard-header .user-avatar[class],
+.dashboard-container .dashboard-header .user-avatar[class],
+.user-menu .user-avatar[class],
+[class*="dashboard"] [class*="header"] [class*="avatar"],
+body [class*="dashboard"] [class*="header"] [class*="avatar"],
+html [class*="dashboard"] [class*="header"] [class*="avatar"],
+.dashboard-header .user-avatar {
+  /* Clean up conflicting styles */
+  border: none !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-color: transparent !important;
+  
+  /* Completely eliminate all outlines */
+  outline: none !important;
+  outline-width: 0 !important;
+  outline-style: none !important;
+  outline-color: transparent !important;
+  
+  /* Add the correct box-shadow for the border effect */
+  box-shadow: 0 0 0 2px #a6abb5 !important;
+  -webkit-box-shadow: 0 0 0 2px #a6abb5 !important;
+  -moz-box-shadow: 0 0 0 2px #a6abb5 !important;
+  
+  /* Enforce correct background color */
+  background-color: #4c566a !important;
+  
+  /* Force dimensions */
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 20px !important;
+  
+  /* Force correct layout */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+  
+  /* Add just a single clean border matching UserPage */
+  border: 2px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Target all possible inner elements that might have outlines */
+body .dashboard-header .user-avatar *,
+html .dashboard-header .user-avatar *,
+.dashboard-header .user-avatar *,
+.dashboard-header .user-avatar *::before,
+.dashboard-header .user-avatar *::after,
+.dashboard-header .default-avatar,
+.dashboard-header .user-profile-placeholder {
+  /* Eliminate all borders from children */
+  border: none !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-color: transparent !important;
+  
+  /* Eliminate all outlines from children */
+  outline: none !important;
+  outline-width: 0 !important;
+  outline-style: none !important;
+  outline-color: transparent !important;
+  
+  /* Eliminate all shadows from children */
+  box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+  -moz-box-shadow: none !important;
+  
+  /* Force correct background color for children */
+  background-color: #4c566a !important;
+}

@@ -1,0 +1,27 @@
+/* Override styles for profile picture placeholder */
+html body .profile-picture-placeholder,
+.profile-picture-placeholder,
+#root .profile-picture-placeholder,
+body .profile-picture-container .profile-picture-placeholder,
+.profile-picture-section .profile-picture-container .profile-picture-placeholder {
+  font-size: 5rem !important;
+  line-height: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background-color: #4c566a !important;
+  background: #4c566a !important;
+  color: #f5f5f5 !important;
+  height: 100% !important;
+  width: 100% !important;
+}
+
+/* Make absolutely sure the background is correct for all themes */
+html[data-theme="light"] .profile-picture-placeholder,
+html[data-theme="dark"] .profile-picture-placeholder,
+body:not(.dark-theme) .profile-picture-placeholder,
+body.dark-theme .profile-picture-placeholder {
+  background-color: #4c566a !important;
+  background: #4c566a !important;
+  color: #f5f5f5 !important;
+}

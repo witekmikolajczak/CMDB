@@ -18,6 +18,20 @@ export class DatabaseController {
       isConfigured: this.databaseConfigService.isDatabaseConfigured()
     };
   }
+  
+  @Public()
+  @Post('clear-config')
+  async clearConfig() {
+    try {
+      this.databaseConfigService.clearConfig();
+      return { success: true, message: 'Database configuration cleared successfully' };
+    } catch (error) {
+      throw new HttpException(
+        `Failed to clear database configuration: ${error.message || 'Unknown error'}`,
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
 
   @Public()
   @Post('test-connection')
@@ -77,6 +91,40 @@ export class DatabaseController {
       ...payload.dbConfig,
       isConfigured: true
     });
+    
+    return result;
+  }
+
+  @Public()
+  @Post('clear-and-recreate-schema')
+  async clearAndRecreateSchema(@Body() config: DatabaseConnectionConfig) {
+    // Get the current database configuration if needed
+    if (!config && this.databaseConfigService.isDatabaseConfigured()) {
+      const savedConfig = this.databaseConfigService.getConfig();
+      if (savedConfig) {
+        config = {
+          hostname: savedConfig.hostname,
+          port: savedConfig.port,
+          database: savedConfig.database,
+          username: savedConfig.username,
+          password: savedConfig.password
+        };
+      }
+    }
+    
+    // Ensure we have config
+    if (!config) {
+      throw new HttpException(
+        'Database configuration not provided and no saved configuration found.', 
+        HttpStatus.BAD_REQUEST
+      );
+    }
+    
+    const result = await this.databaseService.clearDatabaseAndRecreateSchema(config);
+    
+    if (!result.success) {
+      throw new HttpException(result.message, HttpStatus.BAD_REQUEST);
+    }
     
     return result;
   }

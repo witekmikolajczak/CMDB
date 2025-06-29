@@ -11,7 +11,7 @@ interface AuthContextType {
   register: (userData: any) => Promise<void>;
   hasRole: (role: string) => boolean;
   updateUser: (updatedUser?: User | null) => void;
-  updateUserProfile: (profileData: ProfileUpdateData) => Promise<User>;
+  updateUserProfile: (profileData: ProfileUpdateData) => Promise<User | null>;
   uploadProfilePicture: (file: File) => Promise<void>;
   deleteProfilePicture: () => Promise<void>;
   getProfilePictureUrl: () => string;
@@ -104,12 +104,47 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  // Check if user is authenticated
+  const isAuthenticated = !!user;
+  
   // Update user profile
   const updateUserProfile = async (profileData: ProfileUpdateData) => {
     setIsLoading(true);
     try {
+      // Validate the token first
+      const isValid = await authService.validateToken();
+      if (!isValid) {
+        // If token is invalid, clear auth state and redirect to login
+        setUser(null);
+        authService.logout();
+        return null;
+      }
+      
+      // Update profile if token is valid
       const updatedUser = await authService.updateProfile(profileData);
-      setUser(updatedUser);
+      
+      if (updatedUser) {
+        // Update local user state
+        setUser(updatedUser);
+        
+        // Trigger a storage event to notify other components
+        const event = new StorageEvent('storage', {
+          key: 'auth_user',
+          newValue: JSON.stringify(updatedUser)
+        });
+        window.dispatchEvent(event);
+        
+        return updatedUser;
+      }
+      return null;
+    } catch (error: any) {
+      console.error('Error updating profile:', error);
+      // If the error is related to token expiration or user not found, log user out
+      if (error.message?.includes('Session expired') || error.message?.includes('not found')) {
+        setUser(null);
+        authService.logout();
+      }
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -158,9 +193,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return !!user && user.role === role;
   };
 
-  const value = {
+  const value: AuthContextType = {
     user,
-    isAuthenticated: !!user,
+    isAuthenticated,
     isLoading,
     login,
     logout,
