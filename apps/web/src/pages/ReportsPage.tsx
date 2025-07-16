@@ -1,80 +1,105 @@
-// apps/web/src/pages/ReportsPage.tsx
-import React, { useState } from 'react';
-import '../styles/ReportsPage.css';
-import { useAuth } from '../contexts/AuthContext';
-
-// Mock data for reports
-const MOCK_REPORTS = [
-  {
-    id: '1',
-    name: 'Asset Inventory',
-    description: 'Comprehensive list of all company assets',
-    type: 'inventory',
-    lastGenerated: '2024-02-15T10:30:00Z',
-    status: 'completed',
-    frequency: 'monthly',
-    generatedBy: 'John Doe'
-  },
-  {
-    id: '2',
-    name: 'Department Asset Allocation',
-    description: 'Asset distribution across different departments',
-    type: 'department_allocation',
-    lastGenerated: '2024-02-01T14:45:00Z',
-    status: 'completed',
-    frequency: 'quarterly',
-    generatedBy: 'Jane Smith'
-  },
-  {
-    id: '3',
-    name: 'Warranty Expiration',
-    description: 'Assets with warranties expiring in next 90 days',
-    type: 'warranty',
-    lastGenerated: '2024-01-15T09:15:00Z',
-    status: 'scheduled',
-    frequency: 'weekly',
-    generatedBy: 'Mike Johnson'
-  }
-];
+import React, { useEffect, useState } from "react";
+import "../styles/ReportsPage.css";
+import { useAuth } from "../contexts/AuthContext";
+import {
+  generateReport,
+  downloadReport,
+  listUserReports,
+  LisUserReportsResponse,
+} from "../api/reports";
 
 const ReportsPage: React.FC = () => {
   const { user } = useAuth();
   const [selectedReport, setSelectedReport] = useState<any>(null);
-  const [filter, setFilter] = useState('all');
+  // const [generatingId, setGeneratingId] = useState<string | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedType, setSelectedType] = useState("warranty");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [filter, setFilter] = useState("all");
+
+  const [userReports, setUserReports] = useState<LisUserReportsResponse[]>([]);
+
+  useEffect(() => {
+    const fetchReports = async () => {
+      if (!user?.id) return;
+      try {
+        const response = await listUserReports(user.id);
+        console.log("USER REPORTS: ", response);
+
+        setUserReports(response);
+      } catch (error) {
+        console.error("Failed to fetch user reports", error);
+      }
+    };
+
+    fetchReports();
+  }, [user]);
 
   // Format date
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Date(dateString).toLocaleString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
   // Determine status badge color
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
-      case 'completed': return 'status-completed';
-      case 'scheduled': return 'status-scheduled';
-      case 'in_progress': return 'status-in-progress';
-      default: return '';
+      case "completed":
+        return "status-completed";
+      case "scheduled":
+        return "status-scheduled";
+      case "in_progress":
+        return "status-in-progress";
+      default:
+        return "";
     }
   };
 
-  // Filtered reports
-  const filteredReports = MOCK_REPORTS.filter(report => 
-    filter === 'all' || report.status === filter
-  );
+  const handleGenerateReport = async () => {
+    if (!user?.id || !selectedType) return;
+
+    try {
+      setIsGenerating(true);
+      await generateReport(user.id, selectedType);
+
+      const res = await listUserReports(user.id);
+      setUserReports(res);
+      setShowCreateModal(false);
+    } catch (err) {
+      console.error("Failed to generate report", err);
+      alert("Error generating report");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleDownloadReport = async (file: string) => {
+    if (!user?.id || !file) return;
+    try {
+      await downloadReport(user.id, file);
+    } catch (err) {
+      console.error("Failed to download report", err);
+      alert("Error downloading report");
+    }
+  };
 
   return (
     <div className="reports-page">
       <header className="page-header">
         <h1>Reports</h1>
         <div className="header-actions">
-          {user?.role === 'admin' && (
-            <button className="primary-btn">+ Create New Report</button>
+          {user?.role === "admin" && (
+            <button
+              className="primary-btn"
+              onClick={() => setShowCreateModal(true)}
+            >
+              + Create New Report
+            </button>
           )}
         </div>
       </header>
@@ -83,39 +108,39 @@ const ReportsPage: React.FC = () => {
         <div className="reports-controls">
           <div className="filter-section">
             <label htmlFor="status-filter">Filter by Status:</label>
-            <select 
+            <select
               id="status-filter"
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
               className="filter-select"
             >
               <option value="all">All Reports</option>
-              <option value="completed">Completed</option>
+              {/* <option value="completed">Completed</option>
               <option value="scheduled">Scheduled</option>
-              <option value="in_progress">In Progress</option>
+              <option value="in_progress">In Progress</option> */}
             </select>
           </div>
-          <input 
-            type="text" 
-            placeholder="Search reports..." 
-            className="search-input" 
-          />
+          {/* <input
+            type="text"
+            placeholder="Search reports..."
+            className="search-input"
+          /> */}
         </div>
 
         <div className="reports-grid">
-          {filteredReports.map(report => (
-            <div key={report.id} className="report-card">
+          {userReports.map((report) => (
+            <div key={report.file} className="report-card">
               <div className="report-card-header">
-                <h3>{report.name}</h3>
-                <span 
+                <h3>{report.file}</h3>
+                {/* <span
                   className={`status-badge ${getStatusBadgeClass(report.status)}`}
                 >
                   {report.status}
-                </span>
+                </span> */}
               </div>
               <div className="report-card-body">
-                <p className="report-description">{report.description}</p>
-                <div className="report-details">
+                <p className="report-description">{report.downloadUrl}</p>
+                {/* <div className="report-details">
                   <div className="report-detail">
                     <span className="detail-label">Type:</span>
                     <span className="detail-value">{report.type}</span>
@@ -126,24 +151,37 @@ const ReportsPage: React.FC = () => {
                   </div>
                   <div className="report-detail">
                     <span className="detail-label">Last Generated:</span>
-                    <span className="detail-value">{formatDate(report.lastGenerated)}</span>
+                    <span className="detail-value">
+                      {formatDate(report.lastGenerated)}
+                    </span>
                   </div>
                   <div className="report-detail">
                     <span className="detail-label">Generated By:</span>
                     <span className="detail-value">{report.generatedBy}</span>
                   </div>
-                </div>
+                </div> */}
               </div>
               <div className="report-card-actions">
-                <button 
+                <button
                   className="action-btn"
                   onClick={() => setSelectedReport(report)}
                 >
                   View Details
                 </button>
-                {user?.role === 'admin' && (
-                  <button className="secondary-btn">Generate Now</button>
-                )}
+                <button
+                  className="secondary-btn"
+                  onClick={() => handleDownloadReport(report.file)}
+                >
+                  Download Report
+                </button>
+                {/* {user?.role === "admin" && (
+                  <button
+                    className="secondary-btn"
+                    onClick={handleDownloadReport}
+                  >
+                    Generate Now
+                  </button>
+                )} */}
               </div>
             </div>
           ))}
@@ -156,34 +194,84 @@ const ReportsPage: React.FC = () => {
               <div className="report-modal-details">
                 <div className="detail-section">
                   <h3>Report Information</h3>
-                  <p><strong>Name:</strong> {selectedReport.name}</p>
-                  <p><strong>Description:</strong> {selectedReport.description}</p>
-                  <p><strong>Type:</strong> {selectedReport.type}</p>
+                  <p>
+                    <strong>Name:</strong> {selectedReport.name}
+                  </p>
+                  <p>
+                    <strong>Description:</strong> {selectedReport.description}
+                  </p>
+                  <p>
+                    <strong>Type:</strong> {selectedReport.type}
+                  </p>
                 </div>
                 <div className="detail-section">
                   <h3>Generation Details</h3>
-                  <p><strong>Frequency:</strong> {selectedReport.frequency}</p>
-                  <p><strong>Last Generated:</strong> {formatDate(selectedReport.lastGenerated)}</p>
-                  <p><strong>Generated By:</strong> {selectedReport.generatedBy}</p>
                   <p>
-                    <strong>Status:</strong> 
-                    <span className={`status-badge ${getStatusBadgeClass(selectedReport.status)}`}>
+                    <strong>Frequency:</strong> {selectedReport.frequency}
+                  </p>
+                  <p>
+                    <strong>Last Generated:</strong>{" "}
+                    {formatDate(selectedReport.lastGenerated)}
+                  </p>
+                  <p>
+                    <strong>Generated By:</strong> {selectedReport.generatedBy}
+                  </p>
+                  <p>
+                    <strong>Status:</strong>
+                    <span
+                      className={`status-badge ${getStatusBadgeClass(selectedReport.status)}`}
+                    >
                       {selectedReport.status}
                     </span>
                   </p>
                 </div>
               </div>
               <div className="modal-actions">
-                <button 
-                  className="primary-btn"
-                >
-                  Download Report
-                </button>
-                <button 
-                  className="secondary-btn" 
+                <button className="primary-btn">Download Report</button>
+                <button
+                  className="secondary-btn"
                   onClick={() => setSelectedReport(null)}
                 >
                   Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showCreateModal && (
+          <div className="add-department-modal">
+            <div className="modal-content">
+              <h2>Create New Report</h2>
+              <div className="form-group">
+                <label htmlFor="reportType">Select Report Type:</label>
+                <select
+                  id="reportType"
+                  value={selectedType}
+                  onChange={(e) => setSelectedType(e.target.value)}
+                >
+                  <option value="warranty">Warranty Expiration</option>
+                  <option value="inventory">Asset Inventory</option>
+                  <option value="department">Department</option>
+                  <option value="user_assignment">User Assignment</option>
+                  <option value="utilization">Asset Utilization</option>
+                </select>
+              </div>
+
+              <div className="modal-actions">
+                <button
+                  className="secondary-btn"
+                  onClick={() => setShowCreateModal(false)}
+                  disabled={isGenerating}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="primary-btn"
+                  disabled={isGenerating}
+                  onClick={handleGenerateReport}
+                >
+                  {isGenerating ? "Generating..." : "Generate"}
                 </button>
               </div>
             </div>
