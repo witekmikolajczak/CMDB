@@ -10,6 +10,7 @@ import { AssetsModule } from './assets/assets.module';
 import { AssignmentsModule } from './assignments/assignments.module';
 import { UserPreferencesModule } from './user-preferences/user-preferences.module';
 import { AssetTypesModule } from './asset-types/asset-types.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -21,10 +22,9 @@ import { AssetTypesModule } from './asset-types/asset-types.module';
     AssignmentsModule,
     UserPreferencesModule,
     AssetTypesModule,
+    ReportsModule,
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-  ],
+  providers: [AppService],
 })
 export class AppModule {}

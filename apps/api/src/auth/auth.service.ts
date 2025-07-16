@@ -40,47 +40,47 @@ export class AuthService {
    */
   async login(credentials: UserCredentials) {
     const { username, password } = credentials;
-    
+
     // Get the database client
     if (!this.databaseService.getPool()) {
       throw new UnauthorizedException('Database not configured');
     }
-    
+
     let client: PoolClient | null = null;
-    
+
     try {
-        client = await this.databaseService.getPool()!.connect();
-      
+      client = await this.databaseService.getPool()!.connect();
+
       // Find the user
       const result = await client?.query(
         'SELECT u.id, u.username, u.password_hash, u.email, u.first_name, u.last_name, r.name as role, s.name as status FROM cmdb.users u LEFT JOIN cmdb.roles r ON u.role_id = r.id LEFT JOIN cmdb.user_statuses s ON u.status_id = s.id WHERE u.username = $1',
-        [username]
+        [username],
       );
-      
+
       const user = result?.rows[0];
-      
+
       // Check if user exists and is active
       if (!user) {
         throw new UnauthorizedException('Invalid credentials');
       }
-      
+
       if (user.status !== 'active') {
         throw new UnauthorizedException('Account is not active');
       }
-      
+
       // Verify password
       const isPasswordValid = compareSync(password, user.password_hash);
-      
+
       if (!isPasswordValid) {
         throw new UnauthorizedException('Invalid credentials');
       }
-      
+
       // Update last login time
       await client?.query(
         'UPDATE cmdb.users SET last_login = CURRENT_TIMESTAMP WHERE id = $1',
-        [user.id]
+        [user.id],
       );
-      
+
       // Generate JWT token
       const payload: JwtPayload = {
         sub: user.id,
@@ -88,7 +88,7 @@ export class AuthService {
         email: user.email,
         role: user.role,
       };
-      
+
       return {
         access_token: this.jwtService.sign(payload),
         user: {
@@ -116,25 +116,25 @@ export class AuthService {
     if (!this.databaseService.getPool()) {
       throw new UnauthorizedException('Database not configured');
     }
-    
+
     let client: PoolClient | null = null;
-    
+
     try {
       client = await this.databaseService.getPool()!.connect();
-      
+
       // Check if username or email already exists
       const checkResult = await client?.query(
         'SELECT COUNT(*) FROM cmdb.users WHERE username = $1 OR email = $2',
-        [userData.username, userData.email]
+        [userData.username, userData.email],
       );
-      
+
       if (parseInt(checkResult?.rows[0].count) > 0) {
         throw new Error('Username or email already exists');
       }
-      
+
       // Hash the password
       const passwordHash = hashSync(userData.password, 10);
-      
+
       // Insert the new user
       const result = await client?.query(
         `INSERT INTO cmdb.users (
@@ -152,11 +152,11 @@ export class AuthService {
           userData.departmentId || null,
           2, // 2 for standard_user role
           1, // 1 for active status
-        ]
+        ],
       );
-      
+
       const newUser = result?.rows[0];
-      
+
       // Generate JWT token
       const payload: JwtPayload = {
         sub: newUser.id,
@@ -164,7 +164,7 @@ export class AuthService {
         email: newUser.email,
         role: 'standard_user', // Default role
       };
-      
+
       return {
         access_token: this.jwtService.sign(payload),
         user: {
@@ -204,24 +204,24 @@ export class AuthService {
     if (!this.databaseService.getPool()) {
       throw new UnauthorizedException('Database not configured');
     }
-    
+
     let client: PoolClient | null = null;
-    
+
     try {
       client = await this.databaseService.getPool()!.connect();
-      
+
       // Find the user
       const result = await client?.query(
         'SELECT u.id, u.username, u.email, u.first_name, u.last_name, r.name as role, s.name as status FROM cmdb.users u LEFT JOIN cmdb.roles r ON u.role_id = r.id LEFT JOIN cmdb.user_statuses s ON u.status_id = s.id WHERE u.id = $1',
-        [userId]
+        [userId],
       );
-      
+
       const user = result?.rows[0];
-      
+
       if (!user) {
         return null;
       }
-      
+
       return {
         id: user.id,
         username: user.username,
@@ -229,7 +229,7 @@ export class AuthService {
         firstName: user.first_name,
         lastName: user.last_name,
         role: user.role,
-        status: user.status
+        status: user.status,
       };
     } catch (error) {
       this.logger.error(`Failed to get user by ID: ${error.message}`);

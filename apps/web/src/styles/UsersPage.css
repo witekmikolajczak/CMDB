@@ -1,14 +1,23 @@
-/* apps/web/src/styles/UsersPage.css */
-@import url('./Dashboard.css');
+@import url("./Dashboard.css");
+
+.table-container {
+  overflow-x: auto;
+  width: 100%;
+}
 
 .users-page {
+  min-width: 900px;
+  /* width: 100%; */
+  border-collapse: collapse;
   display: flex;
   flex-direction: column;
-  width: 100%;
+
   padding: 2rem;
   background-color: var(--bg-color);
   color: var(--text-color);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 .page-header {
@@ -35,7 +44,9 @@
   border: 1px solid var(--border-color);
   padding: 1.5rem;
   color: var(--text-color);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 .users-list {
@@ -91,7 +102,7 @@
   border-radius: 20px !important;
 }
 
-.search-input, 
+.search-input,
 .filter-select {
   padding: 0.5rem;
   border: 1px solid var(--border-color);
@@ -99,10 +110,13 @@
   font-size: 0.875rem;
   background-color: var(--input-bg);
   color: var(--text-color);
-  transition: border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+  transition:
+    border-color 0.3s ease,
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
-.search-input:focus, 
+.search-input:focus,
 .filter-select:focus {
   outline: none;
   border-color: var(--primary);
@@ -115,7 +129,7 @@
 }
 
 .users-table {
-  width: 100%;
+  /* width: 100%; */
   border-collapse: collapse;
   table-layout: fixed;
 }
@@ -229,8 +243,8 @@
 }
 
 .warning-btn {
-  background-color: #FFD166;
-  color: #2E3440;
+  background-color: #ffd166;
+  color: #2e3440;
 }
 
 .warning-btn:hover {
@@ -318,12 +332,12 @@
   width: 150px;
   height: 150px;
   border-radius: 50%;
-  background-color: #4C566A;
+  background-color: #4c566a;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1rem;
-  color: #ECEFF4;
+  color: #eceff4;
   font-weight: bold;
   text-transform: uppercase;
 }
@@ -338,8 +352,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #4C566A;
-  color: #ECEFF4;
+  background-color: #4c566a;
+  color: #eceff4;
   font-weight: bold;
   font-size: 1rem;
   text-transform: uppercase;
@@ -506,7 +520,7 @@
 }
 
 .users-table {
-  width: 100%;
+  /* width: 100%; */
   border-collapse: collapse;
   margin-top: 1rem;
 }
@@ -560,8 +574,8 @@
 }
 
 .action-btn.warning {
-  background-color: #FFD166; /* accent color from Nord theme */
-  color: #2E3440; /* dark background color from Nord theme */
+  background-color: #ffd166; /* accent color from Nord theme */
+  color: #2e3440; /* dark background color from Nord theme */
 }
 
 .action-btn.warning:hover {
@@ -578,8 +592,8 @@
 }
 
 .warning-btn {
-  background-color: #FFD166; /* accent color from Nord theme */
-  color: #2E3440; /* dark background color from Nord theme */
+  background-color: #ffd166; /* accent color from Nord theme */
+  color: #2e3440; /* dark background color from Nord theme */
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 0.375rem;
@@ -702,7 +716,7 @@
 }
 
 .user-profile-placeholder {
-  color: #2E3440; /* Dark background color from Nord theme */
+  color: #2e3440; /* Dark background color from Nord theme */
   font-weight: bold;
   font-size: 0.875rem;
   text-transform: uppercase;
@@ -840,7 +854,7 @@
 
 .message-content.warning {
   background-color: rgba(255, 209, 102, 0.1);
-  color: #FFD166; /* accent color from Nord theme */
+  color: #ffd166; /* accent color from Nord theme */
 }
 
 .loading-container,
@@ -850,7 +864,9 @@
   color: var(--text-color);
   background-color: var(--bg-color);
   border-radius: 0.5rem;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 .error-container {
@@ -904,7 +920,7 @@
   border-radius: 50%;
   overflow: hidden;
   margin-bottom: 1rem;
-  border: 3px solid #8A4FFF;
+  border: 3px solid #8a4fff;
   box-shadow: 0 0 10px rgba(138, 79, 255, 0.3);
 }
 
@@ -914,13 +930,13 @@
   right: 0;
   width: 32px;
   height: 32px;
-  background-color: #4ECDC4;
+  background-color: #4ecdc4;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #2E3440;
+  color: #2e3440;
   transition: all 0.2s ease;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   z-index: 500;
@@ -934,8 +950,8 @@
 
 .profile-picture-delete-btn {
   padding: 0.5rem 1rem;
-  background-color: #BF616A;
-  color: #ECEFF4;
+  background-color: #bf616a;
+  color: #eceff4;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -953,8 +969,8 @@
 
 .profile-picture-upload-btn {
   padding: 0.75rem 1.5rem;
-  background-color: #8A4FFF;
-  color: #ECEFF4;
+  background-color: #8a4fff;
+  color: #eceff4;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -970,7 +986,7 @@
 }
 
 .material-icons {
-  font-family: 'Material Icons';
+  font-family: "Material Icons";
   font-weight: normal;
   font-style: normal;
   font-size: 1rem;
@@ -981,8 +997,8 @@
   word-wrap: normal;
   white-space: nowrap;
   direction: ltr;
-  font-feature-settings: 'liga';
-  -webkit-font-feature-settings: 'liga';
+  font-feature-settings: "liga";
+  -webkit-font-feature-settings: "liga";
   -webkit-font-smoothing: antialiased;
 }
 
@@ -999,35 +1015,35 @@ button:disabled {
     align-items: flex-end;
     gap: 0.25rem;
   }
-  
+
   .action-btn {
     width: 100%;
     min-width: 80px;
   }
-  
+
   .profile-picture-section {
     flex-direction: column;
     align-items: center;
     gap: 1.5rem;
   }
-  
+
   .picture-actions {
     width: 100%;
     align-items: center;
   }
-  
+
   .profile-picture-container {
     width: 120px;
     height: 120px;
   }
   .profile-picture-container img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  border-radius: 50%;
-}
-  
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 50%;
+  }
+
   .profile-picture-edit-icon {
     width: 28px;
     height: 28px;
